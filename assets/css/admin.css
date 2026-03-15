@@ -59,6 +59,127 @@
     }
 }
 
+/* ── Sportstätte Detail-Layout ───────────────────────────────────────────── */
+
+.tv-breadcrumb {
+    margin-bottom: .5rem;
+}
+
+.tv-breadcrumb a {
+    text-decoration: none;
+    color: #2271b1;
+}
+
+.tv-detail-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Aufklappbare Stammdaten */
+.tv-details-box {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.tv-details-box summary {
+    padding: .85rem 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: .9rem;
+    color: #2271b1;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.tv-details-box summary::before {
+    content: '▶';
+    font-size: .7rem;
+    transition: transform .15s;
+}
+
+.tv-details-box[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.tv-details-content {
+    padding: 1.25rem 1.5rem 1rem;
+    border-top: 1px solid #dcdcde;
+}
+
+/* Slot-Formular */
+.tv-slot-form-box {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.tv-slot-form-box h2 {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    border-bottom: 1px solid #dcdcde;
+    padding-bottom: .6rem;
+}
+
+.tv-slot-form-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    align-items: flex-end;
+}
+
+.tv-slot-form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+.tv-slot-form-grid select,
+.tv-slot-form-grid input[type="time"],
+.tv-slot-form-grid input[type="text"] {
+    font-weight: 400;
+    margin-top: .15rem;
+}
+
+.tv-slot-notiz {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Slot-Liste */
+.tv-slot-list-box {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.tv-slot-list-box h2 {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    border-bottom: 1px solid #dcdcde;
+    padding-bottom: .6rem;
+}
+
+.tv-row-active {
+    background: #fff8e5 !important;
+}
+
+.tv-empty-hint {
+    color: #50575e;
+    font-style: italic;
+}
+
 .tv-form-box,
 .tv-list-box {
     background: #fff;
