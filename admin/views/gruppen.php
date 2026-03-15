@@ -38,7 +38,7 @@
                         </a>
                     </strong>
                 </td>
-                <td><?php echo esc_html( $item->trainer_name ?: '—' ); ?></td>
+                <td><?php echo esc_html( $item->trainer_names ?: '—' ); ?></td>
                 <td><?php
                     if ( $item->min_alter !== null && $item->max_alter !== null ) echo esc_html( $item->min_alter . '–' . $item->max_alter . ' J.' );
                     elseif ( $item->min_alter !== null ) echo 'ab ' . esc_html( $item->min_alter ) . ' J.';
@@ -78,7 +78,7 @@
         <form method="post">
             <?php wp_nonce_field( 'tv_gruppen', 'tv_nonce' ); ?>
             <input type="hidden" name="tv_action" value="save">
-            <?php echo tv_gruppen_fields( null, $trainer_list ); ?>
+            <?php echo tv_gruppen_fields( null, $trainer_list, array() ); ?>
             <p class="submit">
                 <button type="submit" class="button button-primary">Anlegen</button>
                 <a href="<?php echo esc_url( $base_url ); ?>" class="button">Abbrechen</a>
@@ -103,7 +103,7 @@
                     <?php wp_nonce_field( 'tv_gruppen', 'tv_nonce' ); ?>
                     <input type="hidden" name="tv_action" value="save">
                     <input type="hidden" name="id" value="<?php echo esc_attr( $gruppe->id ); ?>">
-                    <?php echo tv_gruppen_fields( $gruppe, $trainer_list ); ?>
+                    <?php echo tv_gruppen_fields( $gruppe, $trainer_list, $selected_tr_ids ); ?>
                     <p class="submit">
                         <button type="submit" class="button button-primary">Speichern</button>
                     </p>
@@ -162,7 +162,8 @@
 </div>
 
 <?php
-function tv_gruppen_fields( $item, $trainer_list ) {
+function tv_gruppen_fields( $item, $trainer_list, $selected_tr_ids ) {
+    $selected_tr_ids = array_map( 'intval', (array) $selected_tr_ids );
     ob_start(); ?>
     <table class="form-table">
         <tr>
@@ -171,17 +172,22 @@ function tv_gruppen_fields( $item, $trainer_list ) {
                        value="<?php echo esc_attr( $item->name ?? '' ); ?>"></td>
         </tr>
         <tr>
-            <th><label for="gr_trainer">Trainer</label></th>
+            <th>Trainer</th>
             <td>
-                <select id="gr_trainer" name="trainer_id" class="regular-text">
-                    <option value="">— kein Trainer —</option>
-                    <?php foreach ( $trainer_list as $t ) : ?>
-                        <option value="<?php echo esc_attr( $t->id ); ?>"
-                            <?php selected( ( $item->trainer_id ?? '' ), $t->id ); ?>>
+                <?php if ( $trainer_list ) : ?>
+                    <fieldset>
+                        <?php foreach ( $trainer_list as $t ) : ?>
+                        <label style="display:block;margin-bottom:4px">
+                            <input type="checkbox" name="trainer_ids[]"
+                                   value="<?php echo esc_attr( $t->id ); ?>"
+                                   <?php checked( in_array( (int) $t->id, $selected_tr_ids, true ) ); ?>>
                             <?php echo esc_html( $t->nachname . ', ' . $t->vorname ); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                        </label>
+                        <?php endforeach; ?>
+                    </fieldset>
+                <?php else : ?>
+                    <p class="description">Noch keine Trainer angelegt.</p>
+                <?php endif; ?>
             </td>
         </tr>
         <tr>

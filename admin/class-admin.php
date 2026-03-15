@@ -246,11 +246,15 @@ class Turnverein_Admin {
             $action = sanitize_text_field( $_POST['tv_action'] ?? '' );
 
             if ( $action === 'save' ) {
+                // Collect trainer_ids from POST (checkboxes → array or empty).
+                $post_data                = $_POST;
+                $post_data['trainer_ids'] = array_map( 'intval', (array) ( $_POST['trainer_ids'] ?? array() ) );
+
                 if ( $id ) {
-                    $repo->update( $id, $_POST );
+                    $repo->update( $id, $post_data );
                     $notice = array( 'success', 'Gruppe aktualisiert.' );
                 } else {
-                    $id     = $repo->create( $_POST );
+                    $id     = $repo->create( $post_data );
                     $notice = array( 'success', 'Gruppe angelegt.' );
                 }
             } elseif ( $action === 'delete' ) {
@@ -260,10 +264,11 @@ class Turnverein_Admin {
             }
         }
 
-        $gruppe       = $id ? $repo->get( $id ) : null;
-        $items        = $repo->get_all();
-        $trainer_list = $trainer_repo->get_all();
-        $gruppe_slots = $gruppe ? $tz->get_by_gruppe( $gruppe->id ) : array();
+        $gruppe          = $id ? $repo->get( $id ) : null;
+        $selected_tr_ids = $gruppe ? $repo->get_trainer_ids( $gruppe->id ) : array();
+        $items           = $repo->get_all();
+        $trainer_list    = $trainer_repo->get_all();
+        $gruppe_slots    = $gruppe ? $tz->get_by_gruppe( $gruppe->id ) : array();
         $base_url     = admin_url( 'admin.php?page=turnverein-gruppen' );
 
         $mode = 'list';

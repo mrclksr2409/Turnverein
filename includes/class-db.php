@@ -61,10 +61,18 @@ class Turnverein_DB {
             KEY gruppe_id (gruppe_id)
         ) $charset_collate;";
 
+        $sql_gruppen_trainer = "CREATE TABLE {$wpdb->prefix}tv_gruppen_trainer (
+            gruppe_id   INT(11) NOT NULL,
+            trainer_id  INT(11) NOT NULL,
+            PRIMARY KEY (gruppe_id, trainer_id),
+            KEY trainer_id (trainer_id)
+        ) $charset_collate;";
+
         dbDelta( $sql_sportstaetten );
         dbDelta( $sql_trainer );
         dbDelta( $sql_gruppen );
         dbDelta( $sql_trainingszeiten );
+        dbDelta( $sql_gruppen_trainer );
 
         add_option( 'turnverein_db_version', TURNVEREIN_VERSION );
     }
