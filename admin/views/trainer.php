@@ -119,7 +119,10 @@
         <?php
         global $wpdb;
         $gruppen_von_trainer = $wpdb->get_results( $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}tv_gruppen WHERE trainer_id = %d ORDER BY name ASC",
+            "SELECT g.* FROM {$wpdb->prefix}tv_gruppen g
+             INNER JOIN {$wpdb->prefix}tv_gruppen_trainer gt ON g.id = gt.gruppe_id
+             WHERE gt.trainer_id = %d
+             ORDER BY g.name ASC",
             $trainer->id
         ) );
         ?>
