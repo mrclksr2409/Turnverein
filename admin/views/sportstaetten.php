@@ -104,16 +104,14 @@
                     <?php echo tv_sportstaette_fields( $ss ); ?>
                     <p class="submit">
                         <button type="submit" class="button button-primary">Speichern</button>
-                        <span style="margin-left:1.5rem;color:#b32d2e">
-                            <form method="post" style="display:inline"
-                                  onsubmit="return confirm('Sportstätte und alle Trainingszeiten löschen?')">
-                                <?php wp_nonce_field( 'tv_sportstaette', 'tv_nonce' ); ?>
-                                <input type="hidden" name="tv_action" value="delete">
-                                <input type="hidden" name="id" value="<?php echo esc_attr( $ss->id ); ?>">
-                                <button type="submit" class="button tv-btn-delete">Sportstätte löschen</button>
-                            </form>
-                        </span>
                     </p>
+                </form>
+                <form method="post"
+                      onsubmit="return confirm('Sportstätte und alle Trainingszeiten löschen?')">
+                    <?php wp_nonce_field( 'tv_sportstaette', 'tv_nonce' ); ?>
+                    <input type="hidden" name="tv_action" value="delete">
+                    <input type="hidden" name="id" value="<?php echo esc_attr( $ss->id ); ?>">
+                    <button type="submit" class="button tv-btn-delete">Sportstätte löschen</button>
                 </form>
             </div>
         </details>

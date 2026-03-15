@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TURNVEREIN_VERSION', '1.0.0' );
+define( 'TURNVEREIN_VERSION', '1.1.0' );
 define( 'TURNVEREIN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TURNVEREIN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -31,3 +31,15 @@ function turnverein_init() {
     new Turnverein_Admin();
 }
 add_action( 'plugins_loaded', 'turnverein_init' );
+
+/**
+ * Führt dbDelta erneut aus, wenn sich die DB-Version geändert hat.
+ * Damit werden neue Tabellen und Spalten bei bestehenden Installationen angelegt.
+ */
+function turnverein_maybe_upgrade() {
+    if ( get_option( 'turnverein_db_version' ) !== TURNVEREIN_VERSION ) {
+        Turnverein_DB::install();
+        update_option( 'turnverein_db_version', TURNVEREIN_VERSION );
+    }
+}
+add_action( 'admin_init', 'turnverein_maybe_upgrade' );
