@@ -91,12 +91,19 @@ class Turnverein_Admin {
     // -------------------------------------------------------------------------
 
     public function page_sportstaetten() {
-        $repo = new Turnverein_Sportstaetten();
-        $tz   = new Turnverein_Trainingszeiten();
+        $repo   = new Turnverein_Sportstaetten();
+        $tz     = new Turnverein_Trainingszeiten();
+        $notice = array();
 
-        $base_url   = admin_url( 'admin.php?page=turnverein-sportstaetten' );
-        $ss_id      = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
-        $notice     = '';
+        // Aktuelle Sportstätte aus POST oder GET ermitteln.
+        $ss_id = 0;
+        if ( ! empty( $_POST['id'] ) ) {
+            $ss_id = (int) $_POST['id'];
+        } elseif ( ! empty( $_POST['sportstaette_id'] ) ) {
+            $ss_id = (int) $_POST['sportstaette_id'];
+        } elseif ( ! empty( $_GET['id'] ) ) {
+            $ss_id = (int) $_GET['id'];
+        }
 
         // ── POST: Sportstätte anlegen / aktualisieren / löschen ──────────────
         if ( isset( $_POST['tv_nonce'] ) &&
@@ -108,18 +115,17 @@ class Turnverein_Admin {
                 $id = (int) ( $_POST['id'] ?? 0 );
                 if ( $id ) {
                     $repo->update( $id, $_POST );
-                    wp_redirect( add_query_arg( array( 'id' => $id, 'updated' => 1 ), $base_url ) );
-                    exit;
+                    $ss_id  = $id;
+                    $notice = array( 'success', 'Sportstätte aktualisiert.' );
                 } else {
-                    $new_id = $repo->create( $_POST );
-                    wp_redirect( add_query_arg( array( 'id' => $new_id, 'created' => 1 ), $base_url ) );
-                    exit;
+                    $ss_id  = $repo->create( $_POST );
+                    $notice = array( 'success', 'Sportstätte angelegt. Jetzt Trainingszeiten eintragen.' );
                 }
             } elseif ( $action === 'delete' ) {
                 $tz->delete_by_sportstaette( (int) $_POST['id'] );
                 $repo->delete( (int) $_POST['id'] );
-                wp_redirect( add_query_arg( 'deleted', 1, $base_url ) );
-                exit;
+                $ss_id  = 0;
+                $notice = array( 'success', 'Sportstätte gelöscht.' );
             }
         }
 
@@ -127,18 +133,17 @@ class Turnverein_Admin {
         if ( isset( $_POST['tv_nonce_tz'] ) &&
              wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tv_nonce_tz'] ) ), 'tv_trainingszeit' ) ) {
 
-            $action  = sanitize_text_field( $_POST['tv_action'] ?? '' );
-            $post_ss = (int) ( $_POST['sportstaette_id'] ?? 0 );
+            $action = sanitize_text_field( $_POST['tv_action'] ?? '' );
 
             if ( $action === 'save_slot' ) {
                 $slot_id = (int) ( $_POST['slot_id'] ?? 0 );
                 if ( $slot_id ) {
                     $tz->update( $slot_id, $_POST );
+                    $notice = array( 'success', 'Trainingszeit aktualisiert.' );
                 } else {
                     $tz->create( $_POST );
+                    $notice = array( 'success', 'Trainingszeit gespeichert.' );
                 }
-                wp_redirect( add_query_arg( array( 'id' => $post_ss, 'slot_saved' => 1 ), $base_url ) );
-                exit;
             }
         }
 
@@ -146,16 +151,8 @@ class Turnverein_Admin {
         if ( isset( $_GET['delete_slot'], $_GET['_wpnonce'] ) &&
              wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'tv_delete_slot' ) ) {
             $tz->delete( (int) $_GET['delete_slot'] );
-            wp_redirect( add_query_arg( array( 'id' => $ss_id, 'slot_deleted' => 1 ), $base_url ) );
-            exit;
+            $notice = array( 'success', 'Trainingszeit gelöscht.' );
         }
-
-        // ── Notices ───────────────────────────────────────────────────────────
-        if ( isset( $_GET['created'] ) )     $notice = array( 'success', 'Sportstätte angelegt. Jetzt Trainingszeiten eintragen.' );
-        if ( isset( $_GET['updated'] ) )     $notice = array( 'success', 'Sportstätte aktualisiert.' );
-        if ( isset( $_GET['deleted'] ) )     $notice = array( 'success', 'Sportstätte gelöscht.' );
-        if ( isset( $_GET['slot_saved'] ) )  $notice = array( 'success', 'Trainingszeit gespeichert.' );
-        if ( isset( $_GET['slot_deleted'] ) ) $notice = array( 'success', 'Trainingszeit gelöscht.' );
 
         // ── Daten laden ───────────────────────────────────────────────────────
         $ss           = $ss_id ? $repo->get( $ss_id ) : null;
@@ -171,6 +168,8 @@ class Turnverein_Admin {
         } elseif ( $ss ) {
             $mode = 'detail';
         }
+
+        $base_url = admin_url( 'admin.php?page=turnverein-sportstaetten' );
 
         include TURNVEREIN_PLUGIN_DIR . 'admin/views/sportstaetten.php';
     }
