@@ -1,0 +1,112 @@
+/* =========================================================
+   Turnverein Manager – Admin Styles
+   ========================================================= */
+
+.tv-wrap h1 {
+    margin-bottom: 1.5rem;
+}
+
+/* Dashboard cards */
+.tv-dashboard-cards {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.tv-card {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 2rem 2.5rem;
+    text-align: center;
+    min-width: 180px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.tv-card .dashicons {
+    font-size: 2.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #2271b1;
+    margin-bottom: .5rem;
+}
+
+.tv-card h2 {
+    font-size: 2.5rem;
+    margin: .25rem 0;
+    color: #1d2327;
+}
+
+.tv-card p {
+    font-size: 1rem;
+    color: #50575e;
+    margin: 0 0 1rem;
+}
+
+/* Two-column layout: form left, list right */
+.tv-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 2rem;
+    align-items: start;
+    margin-top: 1rem;
+}
+
+@media (max-width: 960px) {
+    .tv-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.tv-form-box,
+.tv-list-box {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.tv-form-box h2,
+.tv-list-box h2 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #dcdcde;
+    padding-bottom: .75rem;
+    margin-bottom: 1rem;
+}
+
+/* Tighten the WP form-table inside our smaller box */
+.tv-form-box .form-table th {
+    width: 140px;
+    padding: .6rem 1rem .6rem 0;
+}
+
+.tv-form-box .form-table td {
+    padding: .6rem 0;
+}
+
+/* Actions column */
+.tv-actions {
+    white-space: nowrap;
+}
+
+.tv-btn-delete {
+    color: #b32d2e !important;
+    border-color: #b32d2e !important;
+}
+
+.tv-btn-delete:hover {
+    background: #b32d2e !important;
+    color: #fff !important;
+}
+
+/* Responsive table */
+@media (max-width: 782px) {
+    .wp-list-table th,
+    .wp-list-table td {
+        display: block;
+        width: 100% !important;
+    }
+}
