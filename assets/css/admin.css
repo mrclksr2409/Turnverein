@@ -110,3 +110,92 @@
         width: 100% !important;
     }
 }
+
+/* =========================================================
+   Belegungsplan
+   ========================================================= */
+
+.tv-belegung-section {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.tv-belegung-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #dcdcde;
+    padding-bottom: .75rem;
+}
+
+.tv-belegung-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.tv-belegung-adresse {
+    color: #50575e;
+    font-size: .875rem;
+    flex: 1;
+}
+
+.tv-belegung-empty {
+    color: #50575e;
+    font-style: italic;
+}
+
+.tv-timetable-wrapper {
+    overflow-x: auto;
+}
+
+.tv-timetable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+}
+
+.tv-timetable th,
+.tv-timetable td {
+    border: 1px solid #dcdcde;
+    padding: .5rem .75rem;
+    vertical-align: top;
+    font-size: .875rem;
+}
+
+.tv-timetable thead th {
+    background: #f6f7f7;
+    text-align: center;
+    font-weight: 600;
+}
+
+.tv-time-col {
+    white-space: nowrap;
+    background: #f6f7f7;
+    text-align: right;
+    width: 110px;
+}
+
+.tv-slot {
+    border-radius: 4px;
+    padding: .3rem .5rem;
+    margin-bottom: .25rem;
+    font-size: .8rem;
+    line-height: 1.3;
+}
+
+.tv-slot--belegt {
+    background: #d7edff;
+    border-left: 3px solid #2271b1;
+}
+
+.tv-slot--frei {
+    background: #f0f6e8;
+    border-left: 3px solid #5b8e3e;
+    color: #3c6624;
+}

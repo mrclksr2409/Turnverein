@@ -21,6 +21,7 @@ require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-db.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-sportstaetten.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-trainer.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-gruppen.php';
+require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-trainingszeiten.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'admin/class-admin.php';
 
 register_activation_hook( __FILE__, array( 'Turnverein_DB', 'install' ) );

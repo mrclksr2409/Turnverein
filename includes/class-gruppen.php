@@ -15,15 +15,12 @@ class Turnverein_Gruppen {
     public function get_all() {
         global $wpdb;
         $trainer_table = $wpdb->prefix . 'tv_trainer';
-        $ss_table      = $wpdb->prefix . 'tv_sportstaetten';
 
         return $wpdb->get_results(
             "SELECT g.*,
-                    CONCAT(t.vorname, ' ', t.nachname) AS trainer_name,
-                    s.name AS sportstaette_name
+                    CONCAT(t.vorname, ' ', t.nachname) AS trainer_name
              FROM {$this->table} g
              LEFT JOIN {$trainer_table} t ON g.trainer_id = t.id
-             LEFT JOIN {$ss_table}      s ON g.sportstaette_id = s.id
              ORDER BY g.name ASC"
         );
     }
@@ -51,14 +48,12 @@ class Turnverein_Gruppen {
 
     private function sanitize( $data ) {
         return array(
-            'name'            => sanitize_text_field( $data['name'] ?? '' ),
-            'trainer_id'      => ! empty( $data['trainer_id'] ) ? (int) $data['trainer_id'] : null,
-            'sportstaette_id' => ! empty( $data['sportstaette_id'] ) ? (int) $data['sportstaette_id'] : null,
-            'trainingszeiten' => sanitize_text_field( $data['trainingszeiten'] ?? '' ),
-            'min_alter'       => isset( $data['min_alter'] ) && $data['min_alter'] !== '' ? (int) $data['min_alter'] : null,
-            'max_alter'       => isset( $data['max_alter'] ) && $data['max_alter'] !== '' ? (int) $data['max_alter'] : null,
-            'max_mitglieder'  => (int) ( $data['max_mitglieder'] ?? 0 ),
-            'beschreibung'    => sanitize_textarea_field( $data['beschreibung'] ?? '' ),
+            'name'           => sanitize_text_field( $data['name'] ?? '' ),
+            'trainer_id'     => ! empty( $data['trainer_id'] ) ? (int) $data['trainer_id'] : null,
+            'min_alter'      => isset( $data['min_alter'] ) && $data['min_alter'] !== '' ? (int) $data['min_alter'] : null,
+            'max_alter'      => isset( $data['max_alter'] ) && $data['max_alter'] !== '' ? (int) $data['max_alter'] : null,
+            'max_mitglieder' => (int) ( $data['max_mitglieder'] ?? 0 ),
+            'beschreibung'   => sanitize_textarea_field( $data['beschreibung'] ?? '' ),
         );
     }
 }

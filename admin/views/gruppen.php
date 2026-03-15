@@ -34,26 +34,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="sportstaette_id">Sportstätte</label></th>
-                        <td>
-                            <select id="sportstaette_id" name="sportstaette_id" class="regular-text">
-                                <option value="">— keine Sportstätte —</option>
-                                <?php foreach ( $ss_list as $s ) : ?>
-                                    <option value="<?php echo esc_attr( $s->id ); ?>"
-                                        <?php selected( ( $edit->sportstaette_id ?? '' ), $s->id ); ?>>
-                                        <?php echo esc_html( $s->name ); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="trainingszeiten">Trainingszeiten</label></th>
-                        <td><input type="text" id="trainingszeiten" name="trainingszeiten" class="regular-text"
-                                   placeholder="z.B. Mo/Mi 18:00–20:00 Uhr"
-                                   value="<?php echo esc_attr( $edit->trainingszeiten ?? '' ); ?>"></td>
-                    </tr>
-                    <tr>
                         <th>Altersbereich</th>
                         <td>
                             <input type="number" name="min_alter" class="small-text" min="0" max="120"
@@ -84,6 +64,39 @@
                     <?php endif; ?>
                 </p>
             </form>
+
+            <?php if ( $edit && $gruppe_slots ) : ?>
+            <hr>
+            <h3>Trainingszeiten dieser Gruppe</h3>
+            <table class="wp-list-table widefat striped">
+                <thead>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Von</th>
+                        <th>Bis</th>
+                        <th>Sportstätte</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ( $gruppe_slots as $slot ) : ?>
+                    <tr>
+                        <td><?php echo esc_html( Turnverein_Trainingszeiten::$wochentage[ $slot->wochentag ] ?? $slot->wochentag ); ?></td>
+                        <td><?php echo esc_html( substr( $slot->startzeit, 0, 5 ) ); ?></td>
+                        <td><?php echo esc_html( substr( $slot->endzeit, 0, 5 ) ); ?></td>
+                        <td>
+                            <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten&edit=' . $slot->sportstaette_id ) ); ?>">
+                                <?php echo esc_html( $slot->sportstaette_name ); ?>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <p><small>Trainingszeiten werden in den <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten' ) ); ?>">Sportstätten</a> gepflegt.</small></p>
+            <?php elseif ( $edit ) : ?>
+            <hr>
+            <p><small>Noch keine Trainingszeiten. Diese werden unter <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten' ) ); ?>">Sportstätten</a> gepflegt.</small></p>
+            <?php endif; ?>
         </div>
 
         <!-- List -->
@@ -95,8 +108,6 @@
                     <tr>
                         <th>Gruppe</th>
                         <th>Trainer</th>
-                        <th>Sportstätte</th>
-                        <th>Zeiten</th>
                         <th>Alter</th>
                         <th>Max.</th>
                         <th>Aktionen</th>
@@ -107,8 +118,6 @@
                     <tr>
                         <td><strong><?php echo esc_html( $item->name ); ?></strong></td>
                         <td><?php echo esc_html( $item->trainer_name ?: '—' ); ?></td>
-                        <td><?php echo esc_html( $item->sportstaette_name ?: '—' ); ?></td>
-                        <td><?php echo esc_html( $item->trainingszeiten ?: '—' ); ?></td>
                         <td>
                             <?php
                             if ( $item->min_alter !== null && $item->max_alter !== null ) {
