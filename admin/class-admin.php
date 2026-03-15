@@ -179,32 +179,47 @@ class Turnverein_Admin {
     // -------------------------------------------------------------------------
 
     public function page_trainer() {
-        $repo = new Turnverein_Trainer();
+        $repo     = new Turnverein_Trainer();
+        $notice   = array();
 
-        if ( isset( $_POST['tv_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tv_nonce'] ) ), 'tv_trainer' ) ) {
+        $id = 0;
+        if ( ! empty( $_POST['id'] ) ) {
+            $id = (int) $_POST['id'];
+        } elseif ( ! empty( $_GET['id'] ) ) {
+            $id = (int) $_GET['id'];
+        }
+
+        if ( isset( $_POST['tv_nonce'] ) &&
+             wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tv_nonce'] ) ), 'tv_trainer' ) ) {
+
             $action = sanitize_text_field( $_POST['tv_action'] ?? '' );
 
             if ( $action === 'save' ) {
-                $id = (int) ( $_POST['id'] ?? 0 );
                 if ( $id ) {
                     $repo->update( $id, $_POST );
-                    echo '<div class="notice notice-success"><p>Trainer aktualisiert.</p></div>';
+                    $notice = array( 'success', 'Trainer aktualisiert.' );
                 } else {
-                    $repo->create( $_POST );
-                    echo '<div class="notice notice-success"><p>Trainer gespeichert.</p></div>';
+                    $id     = $repo->create( $_POST );
+                    $notice = array( 'success', 'Trainer angelegt.' );
                 }
             } elseif ( $action === 'delete' ) {
-                $repo->delete( (int) $_POST['id'] );
-                echo '<div class="notice notice-success"><p>Trainer gelöscht.</p></div>';
+                $repo->delete( $id );
+                $id     = 0;
+                $notice = array( 'success', 'Trainer gelöscht.' );
             }
         }
 
-        $edit = null;
-        if ( isset( $_GET['edit'] ) ) {
-            $edit = $repo->get( (int) $_GET['edit'] );
+        $trainer  = $id ? $repo->get( $id ) : null;
+        $items    = $repo->get_all();
+        $base_url = admin_url( 'admin.php?page=turnverein-trainer' );
+
+        $mode = 'list';
+        if ( isset( $_GET['action'] ) && $_GET['action'] === 'neu' ) {
+            $mode = 'new';
+        } elseif ( $trainer ) {
+            $mode = 'detail';
         }
 
-        $items = $repo->get_all();
         include TURNVEREIN_PLUGIN_DIR . 'admin/views/trainer.php';
     }
 
@@ -216,37 +231,46 @@ class Turnverein_Admin {
         $repo         = new Turnverein_Gruppen();
         $trainer_repo = new Turnverein_Trainer();
         $tz           = new Turnverein_Trainingszeiten();
+        $notice       = array();
 
-        if ( isset( $_POST['tv_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tv_nonce'] ) ), 'tv_gruppen' ) ) {
+        $id = 0;
+        if ( ! empty( $_POST['id'] ) ) {
+            $id = (int) $_POST['id'];
+        } elseif ( ! empty( $_GET['id'] ) ) {
+            $id = (int) $_GET['id'];
+        }
+
+        if ( isset( $_POST['tv_nonce'] ) &&
+             wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tv_nonce'] ) ), 'tv_gruppen' ) ) {
+
             $action = sanitize_text_field( $_POST['tv_action'] ?? '' );
 
             if ( $action === 'save' ) {
-                $id = (int) ( $_POST['id'] ?? 0 );
                 if ( $id ) {
                     $repo->update( $id, $_POST );
-                    echo '<div class="notice notice-success"><p>Gruppe aktualisiert.</p></div>';
+                    $notice = array( 'success', 'Gruppe aktualisiert.' );
                 } else {
-                    $repo->create( $_POST );
-                    echo '<div class="notice notice-success"><p>Gruppe gespeichert.</p></div>';
+                    $id     = $repo->create( $_POST );
+                    $notice = array( 'success', 'Gruppe angelegt.' );
                 }
             } elseif ( $action === 'delete' ) {
-                $repo->delete( (int) $_POST['id'] );
-                echo '<div class="notice notice-success"><p>Gruppe gelöscht.</p></div>';
+                $repo->delete( $id );
+                $id     = 0;
+                $notice = array( 'success', 'Gruppe gelöscht.' );
             }
         }
 
-        $edit = null;
-        if ( isset( $_GET['edit'] ) ) {
-            $edit = $repo->get( (int) $_GET['edit'] );
-        }
-
+        $gruppe       = $id ? $repo->get( $id ) : null;
         $items        = $repo->get_all();
         $trainer_list = $trainer_repo->get_all();
+        $gruppe_slots = $gruppe ? $tz->get_by_gruppe( $gruppe->id ) : array();
+        $base_url     = admin_url( 'admin.php?page=turnverein-gruppen' );
 
-        // Show training times for the selected group.
-        $gruppe_slots = array();
-        if ( $edit ) {
-            $gruppe_slots = $tz->get_by_gruppe( $edit->id );
+        $mode = 'list';
+        if ( isset( $_GET['action'] ) && $_GET['action'] === 'neu' ) {
+            $mode = 'new';
+        } elseif ( $gruppe ) {
+            $mode = 'detail';
         }
 
         include TURNVEREIN_PLUGIN_DIR . 'admin/views/gruppen.php';

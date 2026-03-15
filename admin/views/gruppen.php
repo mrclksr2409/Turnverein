@@ -1,80 +1,134 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="wrap tv-wrap">
-    <h1>Gruppen</h1>
 
-    <div class="tv-layout">
-        <!-- Form -->
-        <div class="tv-form-box">
-            <h2><?php echo $edit ? 'Gruppe bearbeiten' : 'Neue Gruppe'; ?></h2>
-            <form method="post">
-                <?php wp_nonce_field( 'tv_gruppen', 'tv_nonce' ); ?>
-                <input type="hidden" name="tv_action" value="save">
-                <?php if ( $edit ) : ?>
-                    <input type="hidden" name="id" value="<?php echo esc_attr( $edit->id ); ?>">
-                <?php endif; ?>
+<?php if ( $notice ) : ?>
+    <div class="notice notice-<?php echo esc_attr( $notice[0] ); ?> is-dismissible">
+        <p><?php echo esc_html( $notice[1] ); ?></p>
+    </div>
+<?php endif; ?>
 
-                <table class="form-table">
-                    <tr>
-                        <th><label for="name">Gruppenname *</label></th>
-                        <td><input type="text" id="name" name="name" class="regular-text" required
-                                   value="<?php echo esc_attr( $edit->name ?? '' ); ?>"></td>
-                    </tr>
-                    <tr>
-                        <th><label for="trainer_id">Trainer</label></th>
-                        <td>
-                            <select id="trainer_id" name="trainer_id" class="regular-text">
-                                <option value="">— kein Trainer —</option>
-                                <?php foreach ( $trainer_list as $t ) : ?>
-                                    <option value="<?php echo esc_attr( $t->id ); ?>"
-                                        <?php selected( ( $edit->trainer_id ?? '' ), $t->id ); ?>>
-                                        <?php echo esc_html( $t->nachname . ', ' . $t->vorname ); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Altersbereich</th>
-                        <td>
-                            <input type="number" name="min_alter" class="small-text" min="0" max="120"
-                                   placeholder="von" value="<?php echo esc_attr( $edit->min_alter ?? '' ); ?>">
-                            &nbsp;bis&nbsp;
-                            <input type="number" name="max_alter" class="small-text" min="0" max="120"
-                                   placeholder="bis" value="<?php echo esc_attr( $edit->max_alter ?? '' ); ?>">
-                            &nbsp;Jahre
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="max_mitglieder">Max. Mitglieder</label></th>
-                        <td><input type="number" id="max_mitglieder" name="max_mitglieder" class="small-text" min="0"
-                                   value="<?php echo esc_attr( $edit->max_mitglieder ?? 0 ); ?>"></td>
-                    </tr>
-                    <tr>
-                        <th><label for="beschreibung">Beschreibung</label></th>
-                        <td><textarea id="beschreibung" name="beschreibung" rows="4" class="large-text"><?php echo esc_textarea( $edit->beschreibung ?? '' ); ?></textarea></td>
-                    </tr>
-                </table>
+<?php /* ================================================================
+         MODUS: Liste
+         ================================================================ */ ?>
+<?php if ( $mode === 'list' ) : ?>
 
-                <p class="submit">
-                    <button type="submit" class="button button-primary">
-                        <?php echo $edit ? 'Aktualisieren' : 'Speichern'; ?>
-                    </button>
-                    <?php if ( $edit ) : ?>
-                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-gruppen' ) ); ?>" class="button">Abbrechen</a>
-                    <?php endif; ?>
-                </p>
-            </form>
+    <h1 class="wp-heading-inline">Gruppen</h1>
+    <a href="<?php echo esc_url( add_query_arg( 'action', 'neu', $base_url ) ); ?>"
+       class="page-title-action">Neue Gruppe</a>
+    <hr class="wp-header-end">
 
-            <?php if ( $edit && $gruppe_slots ) : ?>
-            <hr>
-            <h3>Trainingszeiten dieser Gruppe</h3>
-            <table class="wp-list-table widefat striped">
+    <?php if ( $items ) : ?>
+    <table class="wp-list-table widefat fixed striped">
+        <thead>
+            <tr>
+                <th>Gruppe</th>
+                <th>Trainer</th>
+                <th>Alter</th>
+                <th>Max. Mitglieder</th>
+                <th>Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ( $items as $item ) : ?>
+            <tr>
+                <td>
+                    <strong>
+                        <a href="<?php echo esc_url( add_query_arg( 'id', $item->id, $base_url ) ); ?>">
+                            <?php echo esc_html( $item->name ); ?>
+                        </a>
+                    </strong>
+                </td>
+                <td><?php echo esc_html( $item->trainer_name ?: '—' ); ?></td>
+                <td><?php
+                    if ( $item->min_alter !== null && $item->max_alter !== null ) echo esc_html( $item->min_alter . '–' . $item->max_alter . ' J.' );
+                    elseif ( $item->min_alter !== null ) echo 'ab ' . esc_html( $item->min_alter ) . ' J.';
+                    elseif ( $item->max_alter !== null ) echo 'bis ' . esc_html( $item->max_alter ) . ' J.';
+                    else echo '—';
+                ?></td>
+                <td><?php echo $item->max_mitglieder ? esc_html( $item->max_mitglieder ) : '—'; ?></td>
+                <td class="tv-actions">
+                    <a href="<?php echo esc_url( add_query_arg( 'id', $item->id, $base_url ) ); ?>"
+                       class="button button-small">Öffnen</a>
+                    <form method="post" style="display:inline"
+                          onsubmit="return confirm('Gruppe wirklich löschen?')">
+                        <?php wp_nonce_field( 'tv_gruppen', 'tv_nonce' ); ?>
+                        <input type="hidden" name="tv_action" value="delete">
+                        <input type="hidden" name="id" value="<?php echo esc_attr( $item->id ); ?>">
+                        <button type="submit" class="button button-small tv-btn-delete">Löschen</button>
+                    </form>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php else : ?>
+        <p>Noch keine Gruppen vorhanden. <a href="<?php echo esc_url( add_query_arg( 'action', 'neu', $base_url ) ); ?>">Erste Gruppe anlegen</a></p>
+    <?php endif; ?>
+
+<?php /* ================================================================
+         MODUS: Neu anlegen
+         ================================================================ */ ?>
+<?php elseif ( $mode === 'new' ) : ?>
+
+    <h1 class="wp-heading-inline">Neue Gruppe</h1>
+    <a href="<?php echo esc_url( $base_url ); ?>" class="page-title-action">← Zurück zur Liste</a>
+    <hr class="wp-header-end">
+
+    <div class="tv-form-box" style="max-width:640px;margin-top:1rem">
+        <form method="post">
+            <?php wp_nonce_field( 'tv_gruppen', 'tv_nonce' ); ?>
+            <input type="hidden" name="tv_action" value="save">
+            <?php echo tv_gruppen_fields( null, $trainer_list ); ?>
+            <p class="submit">
+                <button type="submit" class="button button-primary">Anlegen</button>
+                <a href="<?php echo esc_url( $base_url ); ?>" class="button">Abbrechen</a>
+            </p>
+        </form>
+    </div>
+
+<?php /* ================================================================
+         MODUS: Detailansicht
+         ================================================================ */ ?>
+<?php else : ?>
+
+    <p class="tv-breadcrumb"><a href="<?php echo esc_url( $base_url ); ?>">← Alle Gruppen</a></p>
+    <h1><?php echo esc_html( $gruppe->name ); ?></h1>
+
+    <div class="tv-detail-layout">
+
+        <details class="tv-details-box" <?php echo ( $notice && strpos( $notice[1], 'aktualisiert' ) !== false ) ? 'open' : ''; ?>>
+            <summary>Stammdaten bearbeiten</summary>
+            <div class="tv-details-content">
+                <form method="post">
+                    <?php wp_nonce_field( 'tv_gruppen', 'tv_nonce' ); ?>
+                    <input type="hidden" name="tv_action" value="save">
+                    <input type="hidden" name="id" value="<?php echo esc_attr( $gruppe->id ); ?>">
+                    <?php echo tv_gruppen_fields( $gruppe, $trainer_list ); ?>
+                    <p class="submit">
+                        <button type="submit" class="button button-primary">Speichern</button>
+                    </p>
+                </form>
+                <form method="post"
+                      onsubmit="return confirm('Gruppe wirklich löschen?')">
+                    <?php wp_nonce_field( 'tv_gruppen', 'tv_nonce' ); ?>
+                    <input type="hidden" name="tv_action" value="delete">
+                    <input type="hidden" name="id" value="<?php echo esc_attr( $gruppe->id ); ?>">
+                    <button type="submit" class="button tv-btn-delete">Gruppe löschen</button>
+                </form>
+            </div>
+        </details>
+
+        <div class="tv-slot-list-box">
+            <h2>Trainingszeiten (<?php echo count( $gruppe_slots ); ?>)</h2>
+            <?php if ( $gruppe_slots ) : ?>
+            <table class="wp-list-table widefat fixed striped">
                 <thead>
                     <tr>
-                        <th>Tag</th>
-                        <th>Von</th>
-                        <th>Bis</th>
+                        <th style="width:110px">Tag</th>
+                        <th style="width:70px">Von</th>
+                        <th style="width:70px">Bis</th>
                         <th>Sportstätte</th>
+                        <th>Notiz</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,72 +138,73 @@
                         <td><?php echo esc_html( substr( $slot->startzeit, 0, 5 ) ); ?></td>
                         <td><?php echo esc_html( substr( $slot->endzeit, 0, 5 ) ); ?></td>
                         <td>
-                            <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten&edit=' . $slot->sportstaette_id ) ); ?>">
+                            <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten&id=' . $slot->sportstaette_id ) ); ?>">
                                 <?php echo esc_html( $slot->sportstaette_name ); ?>
                             </a>
                         </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            <p><small>Trainingszeiten werden in den <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten' ) ); ?>">Sportstätten</a> gepflegt.</small></p>
-            <?php elseif ( $edit ) : ?>
-            <hr>
-            <p><small>Noch keine Trainingszeiten. Diese werden unter <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten' ) ); ?>">Sportstätten</a> gepflegt.</small></p>
-            <?php endif; ?>
-        </div>
-
-        <!-- List -->
-        <div class="tv-list-box">
-            <h2>Alle Gruppen (<?php echo count( $items ); ?>)</h2>
-            <?php if ( $items ) : ?>
-            <table class="wp-list-table widefat fixed striped">
-                <thead>
-                    <tr>
-                        <th>Gruppe</th>
-                        <th>Trainer</th>
-                        <th>Alter</th>
-                        <th>Max.</th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ( $items as $item ) : ?>
-                    <tr>
-                        <td><strong><?php echo esc_html( $item->name ); ?></strong></td>
-                        <td><?php echo esc_html( $item->trainer_name ?: '—' ); ?></td>
-                        <td>
-                            <?php
-                            if ( $item->min_alter !== null && $item->max_alter !== null ) {
-                                echo esc_html( $item->min_alter . '–' . $item->max_alter . ' J.' );
-                            } elseif ( $item->min_alter !== null ) {
-                                echo 'ab ' . esc_html( $item->min_alter ) . ' J.';
-                            } elseif ( $item->max_alter !== null ) {
-                                echo 'bis ' . esc_html( $item->max_alter ) . ' J.';
-                            } else {
-                                echo '—';
-                            }
-                            ?>
-                        </td>
-                        <td><?php echo $item->max_mitglieder ? esc_html( $item->max_mitglieder ) : '—'; ?></td>
-                        <td class="tv-actions">
-                            <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-gruppen&edit=' . $item->id ) ); ?>"
-                               class="button button-small">Bearbeiten</a>
-                            <form method="post" style="display:inline"
-                                  onsubmit="return confirm('Gruppe wirklich löschen?')">
-                                <?php wp_nonce_field( 'tv_gruppen', 'tv_nonce' ); ?>
-                                <input type="hidden" name="tv_action" value="delete">
-                                <input type="hidden" name="id" value="<?php echo esc_attr( $item->id ); ?>">
-                                <button type="submit" class="button button-small tv-btn-delete">Löschen</button>
-                            </form>
-                        </td>
+                        <td><?php echo esc_html( $slot->notiz ?: '' ); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
             <?php else : ?>
-                <p>Noch keine Gruppen vorhanden.</p>
+                <p class="tv-empty-hint">
+                    Noch keine Trainingszeiten. Diese werden in den
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten' ) ); ?>">Sportstätten</a>
+                    gepflegt.
+                </p>
             <?php endif; ?>
         </div>
+
     </div>
+
+<?php endif; ?>
 </div>
+
+<?php
+function tv_gruppen_fields( $item, $trainer_list ) {
+    ob_start(); ?>
+    <table class="form-table">
+        <tr>
+            <th><label for="gr_name">Gruppenname *</label></th>
+            <td><input type="text" id="gr_name" name="name" class="regular-text" required
+                       value="<?php echo esc_attr( $item->name ?? '' ); ?>"></td>
+        </tr>
+        <tr>
+            <th><label for="gr_trainer">Trainer</label></th>
+            <td>
+                <select id="gr_trainer" name="trainer_id" class="regular-text">
+                    <option value="">— kein Trainer —</option>
+                    <?php foreach ( $trainer_list as $t ) : ?>
+                        <option value="<?php echo esc_attr( $t->id ); ?>"
+                            <?php selected( ( $item->trainer_id ?? '' ), $t->id ); ?>>
+                            <?php echo esc_html( $t->nachname . ', ' . $t->vorname ); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>Altersbereich</th>
+            <td>
+                <input type="number" name="min_alter" class="small-text" min="0" max="120" placeholder="von"
+                       value="<?php echo esc_attr( $item->min_alter ?? '' ); ?>">
+                &nbsp;bis&nbsp;
+                <input type="number" name="max_alter" class="small-text" min="0" max="120" placeholder="bis"
+                       value="<?php echo esc_attr( $item->max_alter ?? '' ); ?>">
+                &nbsp;Jahre
+            </td>
+        </tr>
+        <tr>
+            <th><label for="gr_max">Max. Mitglieder</label></th>
+            <td><input type="number" id="gr_max" name="max_mitglieder" class="small-text" min="0"
+                       value="<?php echo esc_attr( $item->max_mitglieder ?? 0 ); ?>"></td>
+        </tr>
+        <tr>
+            <th><label for="gr_beschr">Beschreibung</label></th>
+            <td><textarea id="gr_beschr" name="beschreibung" rows="3" class="large-text"><?php echo esc_textarea( $item->beschreibung ?? '' ); ?></textarea></td>
+        </tr>
+    </table>
+    <?php
+    return ob_get_clean();
+}
