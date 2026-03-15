@@ -57,14 +57,29 @@ class Turnverein_Trainingszeiten {
         global $wpdb;
         $ss_table      = $wpdb->prefix . 'tv_sportstaetten';
         $gruppen_table = $wpdb->prefix . 'tv_gruppen';
+        $pivot_table   = $wpdb->prefix . 'tv_gruppen_trainer';
+        $trainer_table = $wpdb->prefix . 'tv_trainer';
 
         return $wpdb->get_results(
             "SELECT t.*,
                     s.name AS sportstaette_name,
-                    g.name AS gruppe_name
+                    g.name AS gruppe_name,
+                    GROUP_CONCAT(
+                        CONCAT(tr.vorname, ' ', tr.nachname)
+                        ORDER BY tr.nachname, tr.vorname
+                        SEPARATOR ', '
+                    ) AS trainer_names,
+                    GROUP_CONCAT(
+                        tr.telefon
+                        ORDER BY tr.nachname, tr.vorname
+                        SEPARATOR ', '
+                    ) AS trainer_telefone
              FROM {$this->table} t
-             LEFT JOIN {$ss_table}      s ON t.sportstaette_id = s.id
-             LEFT JOIN {$gruppen_table} g ON t.gruppe_id       = g.id
+             LEFT JOIN {$ss_table}      s  ON t.sportstaette_id = s.id
+             LEFT JOIN {$gruppen_table} g  ON t.gruppe_id       = g.id
+             LEFT JOIN {$pivot_table}   gt ON g.id              = gt.gruppe_id
+             LEFT JOIN {$trainer_table} tr ON gt.trainer_id     = tr.id
+             GROUP BY t.id
              ORDER BY t.sportstaette_id ASC, t.wochentag ASC, t.startzeit ASC"
         );
     }
