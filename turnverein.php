@@ -22,6 +22,7 @@ require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-sportstaetten.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-trainer.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-gruppen.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-trainingszeiten.php';
+require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-shortcodes.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'admin/class-admin.php';
 
 register_activation_hook( __FILE__, array( 'Turnverein_DB', 'install' ) );
@@ -29,6 +30,7 @@ register_deactivation_hook( __FILE__, array( 'Turnverein_DB', 'uninstall' ) );
 
 function turnverein_init() {
     new Turnverein_Admin();
+    new Turnverein_Shortcodes();
 }
 add_action( 'plugins_loaded', 'turnverein_init' );
 
