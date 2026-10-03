@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: Turnverein Manager
- * Plugin URI:  https://example.com/turnverein
+ * Plugin URI:  https://github.com/mrclksr2409/Turnverein
  * Description: Verwaltung von Sportstätten, Trainern und Gruppen für Turnvereine.
- * Version:     1.0.0
+ * Version:     1.3.0
  * Author:      Turnverein
  * License:     GPL-2.0+
  * Text Domain: turnverein
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TURNVEREIN_VERSION', '1.2.0' );
+define( 'TURNVEREIN_VERSION', '1.3.0' );
 define( 'TURNVEREIN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TURNVEREIN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -24,6 +24,29 @@ require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-gruppen.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-trainingszeiten.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'includes/class-shortcodes.php';
 require_once TURNVEREIN_PLUGIN_DIR . 'admin/class-admin.php';
+
+/**
+ * Plugin Update Checker — pulls updates from GitHub (stable branch: main).
+ */
+$turnverein_puc_loader = TURNVEREIN_PLUGIN_DIR . 'lib/plugin-update-checker/plugin-update-checker.php';
+if ( file_exists( $turnverein_puc_loader ) ) {
+    require_once $turnverein_puc_loader;
+
+    if ( class_exists( '\\YahnisElsts\\PluginUpdateChecker\\v5\\PucFactory' ) ) {
+        $turnverein_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+            'https://github.com/mrclksr2409/Turnverein/',
+            __FILE__,
+            'turnverein'
+        );
+
+        // Development happens on "beta"; installed sites only receive what is on "main".
+        $turnverein_update_checker->setBranch( 'main' );
+
+        // Prefer an attached release ZIP over the auto-generated source archive.
+        $turnverein_update_checker->getVcsApi()->enableReleaseAssets( '/\.zip($|[?&#])/i' );
+    }
+}
+unset( $turnverein_puc_loader );
 
 register_activation_hook( __FILE__, array( 'Turnverein_DB', 'install' ) );
 register_deactivation_hook( __FILE__, array( 'Turnverein_DB', 'uninstall' ) );
