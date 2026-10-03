@@ -25,5 +25,5 @@ WordPress checks for updates automatically (every 12 hours by default). You can 
 ## Changelog
 
 ### 1.3.0 — 2026-10-03
-- Added: automatic updates via Plugin Update Checker (branch `main`).
+- Added: automatic updates via Plugin Update Checker v5.7 (branch `main`).
 - Fixed: plugin header version now matches `TURNVEREIN_VERSION`.
