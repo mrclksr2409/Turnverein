@@ -17,7 +17,7 @@ WordPress plugin for managing sports facilities, trainers, groups and training t
 
 This plugin uses the [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker) library (bundled in `lib/plugin-update-checker/`) to deliver updates directly from GitHub.
 
-- Updates are taken from the **`main`** branch: PUC uses the latest stable GitHub Release first, then the latest tag, and falls back to the current state of `main` (version from the plugin header).
+- Updates are taken straight from the **`main`** branch (version from the plugin header). GitHub releases and tags are ignored.
 - Development happens on the **`beta`** branch. Changes reach installed sites only after they are merged into `main` with a higher version number.
 
 WordPress checks for updates automatically (every 12 hours by default). You can trigger a manual check under **Plugins → Check for updates**.

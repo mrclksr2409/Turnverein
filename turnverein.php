@@ -42,8 +42,14 @@ if ( file_exists( $turnverein_puc_loader ) ) {
         // Development happens on "beta"; installed sites only receive what is on "main".
         $turnverein_update_checker->setBranch( 'main' );
 
-        // Prefer an attached release ZIP over the auto-generated source archive.
-        $turnverein_update_checker->getVcsApi()->enableReleaseAssets( '/\.zip($|[?&#])/i' );
+        // Ignore GitHub releases and tags so only the main branch HEAD is used.
+        add_filter(
+            $turnverein_update_checker->getUniqueName( 'vcs_update_detection_strategies' ),
+            static function ( $strategies ) {
+                unset( $strategies['latest_release'], $strategies['latest_tag'] );
+                return $strategies;
+            }
+        );
     }
 }
 unset( $turnverein_puc_loader );
