@@ -26,11 +26,14 @@ class Turnverein_Trainingszeiten {
     public function get_by_sportstaette( $sportstaette_id ) {
         global $wpdb;
         $gruppen_table = $wpdb->prefix . 'tv_gruppen';
+        $trainer_table = $wpdb->prefix . 'tv_trainer';
 
         return $wpdb->get_results( $wpdb->prepare(
-            "SELECT t.*, g.name AS gruppe_name
+            "SELECT t.*, g.name AS gruppe_name,
+                    CONCAT(tr.vorname, ' ', tr.nachname) AS trainer_name
              FROM {$this->table} t
-             LEFT JOIN {$gruppen_table} g ON t.gruppe_id = g.id
+             LEFT JOIN {$gruppen_table} g  ON t.gruppe_id  = g.id
+             LEFT JOIN {$trainer_table} tr ON t.trainer_id = tr.id
              WHERE t.sportstaette_id = %d
              ORDER BY t.wochentag ASC, t.startzeit ASC",
             $sportstaette_id
@@ -52,7 +55,11 @@ class Turnverein_Trainingszeiten {
         ) );
     }
 
-    /** Alle Slots aller Sportstätten (für den Belegungsplan). */
+    /**
+     * Alle Slots aller Sportstätten (für den Belegungsplan).
+     * Ist am Slot ein Trainer gewählt, wird nur dieser ausgegeben – sofern er
+     * (noch) der Gruppe zugeordnet ist, sonst alle Trainer der Gruppe.
+     */
     public function get_all_with_details() {
         global $wpdb;
         $ss_table      = $wpdb->prefix . 'tv_sportstaetten';
@@ -78,6 +85,15 @@ class Turnverein_Trainingszeiten {
              LEFT JOIN {$ss_table}      s  ON t.sportstaette_id = s.id
              LEFT JOIN {$gruppen_table} g  ON t.gruppe_id       = g.id
              LEFT JOIN {$pivot_table}   gt ON g.id              = gt.gruppe_id
+                                         AND (
+                                             t.trainer_id IS NULL
+                                             OR gt.trainer_id = t.trainer_id
+                                             OR NOT EXISTS (
+                                                 SELECT 1 FROM {$pivot_table} gx
+                                                 WHERE gx.gruppe_id  = t.gruppe_id
+                                                   AND gx.trainer_id = t.trainer_id
+                                             )
+                                         )
              LEFT JOIN {$trainer_table} tr ON gt.trainer_id     = tr.id
              GROUP BY t.id
              ORDER BY t.sportstaette_id ASC, t.wochentag ASC, t.startzeit ASC"
@@ -113,10 +129,23 @@ class Turnverein_Trainingszeiten {
         return $wpdb->delete( $this->table, array( 'sportstaette_id' => (int) $sportstaette_id ) );
     }
 
+    /** Entfernt die Trainer-Zuordnung aus allen Slots (z.B. beim Löschen des Trainers). */
+    public function clear_trainer( $trainer_id ) {
+        global $wpdb;
+        return $wpdb->query( $wpdb->prepare(
+            "UPDATE {$this->table} SET trainer_id = NULL WHERE trainer_id = %d",
+            (int) $trainer_id
+        ) );
+    }
+
     private function sanitize( $data ) {
+        $gruppe_id = ! empty( $data['gruppe_id'] ) ? (int) $data['gruppe_id'] : null;
+
         return array(
             'sportstaette_id' => (int) $data['sportstaette_id'],
-            'gruppe_id'       => ! empty( $data['gruppe_id'] ) ? (int) $data['gruppe_id'] : null,
+            'gruppe_id'       => $gruppe_id,
+            // Ein Trainer ist nur zusammen mit einer Gruppe sinnvoll.
+            'trainer_id'      => $gruppe_id && ! empty( $data['trainer_id'] ) ? (int) $data['trainer_id'] : null,
             'wochentag'       => (int) $data['wochentag'],
             'startzeit'       => $this->sanitize_time( $data['startzeit'] ?? '' ),
             'endzeit'         => $this->sanitize_time( $data['endzeit'] ?? '' ),

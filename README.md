@@ -24,6 +24,9 @@ WordPress checks for updates automatically (every 12 hours by default). You can 
 
 ## Changelog
 
+### 1.4.0 — 2026-10-05
+- Added: when a group has several trainers, a specific trainer can be selected per training slot. The Belegungsplan (admin and `[tv_belegungsplan]` shortcode) then shows only that trainer.
+
 ### 1.3.0 — 2026-10-03
 - Added: automatic updates via Plugin Update Checker v5.7 (branch `main`).
 - Fixed: plugin header version now matches `TURNVEREIN_VERSION`.

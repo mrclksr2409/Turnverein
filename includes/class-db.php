@@ -52,13 +52,15 @@ class Turnverein_DB {
             id              INT(11)  NOT NULL AUTO_INCREMENT,
             sportstaette_id INT(11)  NOT NULL,
             gruppe_id       INT(11)  DEFAULT NULL,
+            trainer_id      INT(11)  DEFAULT NULL,
             wochentag       TINYINT  NOT NULL,
             startzeit       TIME     NOT NULL,
             endzeit         TIME     NOT NULL,
             notiz           VARCHAR(255) DEFAULT '',
             PRIMARY KEY (id),
             KEY sportstaette_id (sportstaette_id),
-            KEY gruppe_id (gruppe_id)
+            KEY gruppe_id (gruppe_id),
+            KEY trainer_id (trainer_id)
         ) $charset_collate;";
 
         $sql_gruppen_trainer = "CREATE TABLE {$wpdb->prefix}tv_gruppen_trainer (

@@ -151,12 +151,28 @@
                     </label>
                     <label>
                         Gruppe
-                        <select name="gruppe_id">
+                        <select name="gruppe_id" id="tv_slot_gruppe">
                             <option value="">— freier Slot —</option>
                             <?php foreach ( $gruppen_list as $g ) : ?>
                                 <option value="<?php echo esc_attr( $g->id ); ?>"
                                     <?php selected( ( $edit_slot->gruppe_id ?? '' ), $g->id ); ?>>
                                     <?php echo esc_html( $g->name ); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <?php
+                    $slot_gruppe_id  = (int) ( $edit_slot->gruppe_id ?? 0 );
+                    $slot_trainer_id = (int) ( $edit_slot->trainer_id ?? 0 );
+                    $slot_trainers   = $trainer_map[ $slot_gruppe_id ] ?? array();
+                    ?>
+                    <label id="tv_slot_trainer_wrap" <?php echo count( $slot_trainers ) > 1 ? '' : 'hidden'; ?>>
+                        Trainer
+                        <select name="trainer_id" id="tv_slot_trainer">
+                            <option value="">— alle Trainer der Gruppe —</option>
+                            <?php foreach ( $slot_trainers as $tid => $tname ) : ?>
+                                <option value="<?php echo esc_attr( $tid ); ?>" <?php selected( $slot_trainer_id, $tid ); ?>>
+                                    <?php echo esc_html( $tname ); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -177,6 +193,24 @@
                     <?php endif; ?>
                 </p>
             </form>
+            <script>
+            ( function () {
+                var map     = <?php echo wp_json_encode( (object) array_map( fn( $t ) => array_map( null, array_keys( $t ), array_values( $t ) ), $trainer_map ) ); ?>;
+                var gruppe  = document.getElementById( 'tv_slot_gruppe' );
+                var wrap    = document.getElementById( 'tv_slot_trainer_wrap' );
+                var trainer = document.getElementById( 'tv_slot_trainer' );
+
+                gruppe.addEventListener( 'change', function () {
+                    var list = map[ gruppe.value ] || [];
+                    trainer.length = 1; // nur "alle Trainer der Gruppe" behalten
+                    list.forEach( function ( t ) {
+                        trainer.add( new Option( t[1], t[0] ) );
+                    } );
+                    trainer.value = '';
+                    wrap.hidden   = list.length < 2;
+                } );
+            } )();
+            </script>
         </div>
 
         <?php /* ── Slot-Liste ── */ ?>
@@ -190,6 +224,7 @@
                         <th style="width:70px">Von</th>
                         <th style="width:70px">Bis</th>
                         <th>Gruppe</th>
+                        <th>Trainer</th>
                         <th>Notiz</th>
                         <th style="width:140px">Aktionen</th>
                     </tr>
@@ -201,6 +236,7 @@
                         <td><?php echo esc_html( substr( $slot->startzeit, 0, 5 ) ); ?></td>
                         <td><?php echo esc_html( substr( $slot->endzeit, 0, 5 ) ); ?></td>
                         <td><?php echo esc_html( $slot->gruppe_name ?: '— frei —' ); ?></td>
+                        <td><?php echo esc_html( $slot->gruppe_id ? ( $slot->trainer_name ?: 'alle' ) : '' ); ?></td>
                         <td><?php echo esc_html( $slot->notiz ?: '' ); ?></td>
                         <td class="tv-actions">
                             <a href="<?php echo esc_url( add_query_arg( array( 'id' => $ss->id, 'edit_slot' => $slot->id ), $base_url ) ); ?>"

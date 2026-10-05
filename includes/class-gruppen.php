@@ -46,6 +46,27 @@ class Turnverein_Gruppen {
         ) );
     }
 
+    /**
+     * Trainer aller Gruppen als Map: gruppe_id => array( trainer_id => "Vorname Nachname" ).
+     */
+    public function get_trainer_map() {
+        global $wpdb;
+        $trainer_table = $wpdb->prefix . 'tv_trainer';
+
+        $rows = $wpdb->get_results(
+            "SELECT gt.gruppe_id, t.id, CONCAT(t.vorname, ' ', t.nachname) AS name
+             FROM {$this->pivot} gt
+             JOIN {$trainer_table} t ON gt.trainer_id = t.id
+             ORDER BY t.nachname ASC, t.vorname ASC"
+        );
+
+        $map = array();
+        foreach ( $rows as $row ) {
+            $map[ (int) $row->gruppe_id ][ (int) $row->id ] = $row->name;
+        }
+        return $map;
+    }
+
     public function create( $data ) {
         global $wpdb;
         $wpdb->insert( $this->table, $this->sanitize( $data ) );

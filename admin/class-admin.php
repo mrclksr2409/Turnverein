@@ -136,12 +136,21 @@ class Turnverein_Admin {
             $action = sanitize_text_field( $_POST['tv_action'] ?? '' );
 
             if ( $action === 'save_slot' ) {
-                $slot_id = (int) ( $_POST['slot_id'] ?? 0 );
+                $slot_id   = (int) ( $_POST['slot_id'] ?? 0 );
+                $slot_data = $_POST;
+
+                // Gewählter Trainer muss der Gruppe zugeordnet sein.
+                $gruppe_id  = (int) ( $slot_data['gruppe_id'] ?? 0 );
+                $trainer_id = (int) ( $slot_data['trainer_id'] ?? 0 );
+                if ( $trainer_id && ! in_array( $trainer_id, array_map( 'intval', ( new Turnverein_Gruppen() )->get_trainer_ids( $gruppe_id ) ), true ) ) {
+                    $slot_data['trainer_id'] = 0;
+                }
+
                 if ( $slot_id ) {
-                    $tz->update( $slot_id, $_POST );
+                    $tz->update( $slot_id, $slot_data );
                     $notice = array( 'success', 'Trainingszeit aktualisiert.' );
                 } else {
-                    $tz->create( $_POST );
+                    $tz->create( $slot_data );
                     $notice = array( 'success', 'Trainingszeit gespeichert.' );
                 }
             }
@@ -157,7 +166,9 @@ class Turnverein_Admin {
         // ── Daten laden ───────────────────────────────────────────────────────
         $ss           = $ss_id ? $repo->get( $ss_id ) : null;
         $items        = $repo->get_all();
-        $gruppen_list = ( new Turnverein_Gruppen() )->get_all();
+        $gruppen_repo = new Turnverein_Gruppen();
+        $gruppen_list = $gruppen_repo->get_all();
+        $trainer_map  = $gruppen_repo->get_trainer_map();
         $slots        = $ss ? $tz->get_by_sportstaette( $ss->id ) : array();
         $edit_slot    = isset( $_GET['edit_slot'] ) ? $tz->get( (int) $_GET['edit_slot'] ) : null;
 
@@ -203,6 +214,7 @@ class Turnverein_Admin {
                     $notice = array( 'success', 'Trainer angelegt.' );
                 }
             } elseif ( $action === 'delete' ) {
+                ( new Turnverein_Trainingszeiten() )->clear_trainer( $id );
                 $repo->delete( $id );
                 $id     = 0;
                 $notice = array( 'success', 'Trainer gelöscht.' );
