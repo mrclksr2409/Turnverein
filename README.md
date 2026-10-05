@@ -16,7 +16,7 @@ WordPress plugin for managing sports facilities, trainers, groups and training t
 |---|---|---|
 | `[tv_sportstaetten]` | Table of all facilities in the admin order | `id="1"` – single facility; `spalten="name,adresse,kapazitaet,beschreibung"` – columns and their order (default: `name,adresse,kapazitaet`) |
 | `[tv_gruppe_trainer]` | Trainers per group with image and phone number | `id="3"` or `gruppe="Name"` – single group; `bild="nein"` – hide images; `email="ja"` – show e-mail; `titel="nein"` – hide group heading |
-| `[tv_belegungsplan]` | Training schedule grouped by weekday | `sportstaette_id="1"`, `tag="Montag"` |
+| `[tv_belegungsplan]` | Full training schedule, one section per facility (admin order), grouped by weekday | `sportstaette_id="1"` – single facility; `gruppe_id="3"` or `gruppe="Name"` – training times of one group; `tag="Montag"`; `titel="nein"` – hide headings; `telefon="nein"` – hide phone column |
 
 The matching shortcode for a single facility or group is shown on its detail page in the admin.
 
@@ -41,6 +41,11 @@ This plugin uses the [Plugin Update Checker](https://github.com/YahnisElsts/plug
 WordPress checks for updates automatically (every 12 hours by default). You can trigger a manual check under **Plugins → Check for updates**.
 
 ## Changelog
+
+### 1.5.1 — 2026-10-05
+- Changed: `[tv_belegungsplan]` without attributes now renders the full schedule with one section (name and address) per facility.
+- Added: `[tv_belegungsplan gruppe_id="…"]` / `gruppe="…"` for the training times of a single group.
+- Added: `titel` and `telefon` options for `[tv_belegungsplan]`; shortcode hints on the Belegungsplan and group pages.
 
 ### 1.5.0 — 2026-10-05
 - Added: trainer image (media library), shown in the admin and in `[tv_gruppe_trainer]`.

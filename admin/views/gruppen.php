@@ -69,6 +69,11 @@
                 <input type="text" class="tv-shortcode-input regular-text" readonly value="[tv_gruppe_trainer]">
             </label>
         </p>
+        <p>
+            <label>Trainingszeiten einer Gruppe:
+                <input type="text" class="tv-shortcode-input regular-text" readonly value='[tv_belegungsplan gruppe_id="ID"]'>
+            </label>
+        </p>
         <p class="description">
             Optionen: <code>id="3"</code> oder <code>gruppe="Name"</code> (nur eine Gruppe), <code>bild="nein"</code> (ohne Bilder),
             <code>email="ja"</code> (E-Mail-Adresse anzeigen), <code>titel="nein"</code> (ohne Gruppenüberschrift).
@@ -113,6 +118,10 @@
             <label>Shortcode (Trainer dieser Gruppe):
                 <input type="text" class="tv-shortcode-input regular-text" readonly
                        value="<?php echo esc_attr( '[tv_gruppe_trainer id="' . $gruppe->id . '"]' ); ?>">
+            </label>
+            <label>Shortcode (Trainingszeiten dieser Gruppe):
+                <input type="text" class="tv-shortcode-input regular-text" readonly
+                       value="<?php echo esc_attr( '[tv_belegungsplan gruppe_id="' . $gruppe->id . '"]' ); ?>">
             </label>
         </div>
 

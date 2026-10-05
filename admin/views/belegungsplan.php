@@ -2,6 +2,16 @@
 <div class="wrap tv-wrap">
     <h1>Belegungsplan</h1>
 
+    <div class="tv-shortcode-box">
+        <label>Vollständiger Belegungsplan:
+            <input type="text" class="tv-shortcode-input regular-text" readonly value="[tv_belegungsplan]">
+        </label>
+        <p class="description">
+            Optionen: <code>sportstaette_id="1"</code> (eine Sportstätte), <code>gruppe_id="3"</code> oder <code>gruppe="Name"</code>
+            (eine Gruppe), <code>tag="Montag"</code>, <code>titel="nein"</code>, <code>telefon="nein"</code>.
+        </p>
+    </div>
+
     <?php if ( empty( $all_ss ) ) : ?>
         <p>Noch keine Sportstätten vorhanden.
            <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten' ) ); ?>">Sportstätte anlegen</a>
@@ -22,6 +32,8 @@
             <?php endif; ?>
             <a href="<?php echo esc_url( admin_url( 'admin.php?page=turnverein-sportstaetten&id=' . $ss->id ) ); ?>"
                class="button button-small">Slots verwalten</a>
+            <input type="text" class="tv-shortcode-input" readonly size="34"
+                   value="<?php echo esc_attr( '[tv_belegungsplan sportstaette_id="' . $ss->id . '"]' ); ?>">
         </div>
 
         <?php if ( empty( $ss_slots ) ) : ?>

@@ -12,9 +12,10 @@
  * [tv_sportstaetten id="1"]   – Nur eine bestimmte Sportstätte
  *   Optionen: spalten="name,adresse,kapazitaet,beschreibung" (Auswahl/Reihenfolge)
  *
- * [tv_belegungsplan]                    – Alle Sportstätten
- * [tv_belegungsplan sportstaette_id="1"] – Nur eine bestimmte Sportstätte
- * [tv_belegungsplan tag="Montag"]        – Nur einen bestimmten Wochentag
+ * [tv_belegungsplan]                    – Vollständiger Plan, je Sportstätte ein Abschnitt
+ * [tv_belegungsplan sportstaette_id="1"] – Plan einer Sportstätte
+ * [tv_belegungsplan gruppe_id="3"]       – Trainingszeiten einer Gruppe (alternativ gruppe="Name")
+ *   Optionen: tag="Montag", titel="ja|nein", telefon="ja|nein"
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -126,92 +127,184 @@ class Turnverein_Shortcodes {
     }
 
     // -------------------------------------------------------------------------
-    // [tv_belegungsplan sportstaette_id="…" tag="…"]
+    // [tv_belegungsplan sportstaette_id="…" gruppe_id="…" gruppe="…" tag="…"]
     // -------------------------------------------------------------------------
 
     public function shortcode_belegungsplan( $atts ) {
-        global $wpdb;
-
         $atts = shortcode_atts( array(
             'sportstaette_id' => '',
-            'tag'             => '',  // z.B. "Montag"
+            'gruppe_id'       => '',
+            'gruppe'          => '',    // group name, alternative to gruppe_id
+            'tag'             => '',    // e.g. "Montag"
+            'titel'           => 'ja',  // headings (facility / group name)
+            'telefon'         => 'ja',  // trainer phone column
         ), $atts, 'tv_belegungsplan' );
+
+        $show_titel   = $this->is_truthy( $atts['titel'] );
+        $show_telefon = $this->is_truthy( $atts['telefon'] );
 
         $tz    = new Turnverein_Trainingszeiten();
         $slots = $tz->get_all_with_details();
 
-        if ( empty( $slots ) ) {
-            return '<p class="tv-no-data">Keine Trainingszeiten eingetragen.</p>';
-        }
-
-        // Optional: filter by sportstaette_id.
-        if ( ! empty( $atts['sportstaette_id'] ) ) {
-            $filter_ss = (int) $atts['sportstaette_id'];
-            $slots = array_filter( $slots, fn( $s ) => (int) $s->sportstaette_id === $filter_ss );
-        }
-
         // Optional: filter by weekday name.
-        $filter_tag = '';
-        if ( ! empty( $atts['tag'] ) ) {
-            $filter_tag = sanitize_text_field( $atts['tag'] );
-            $tag_nr = array_search( $filter_tag, Turnverein_Trainingszeiten::$wochentage, true );
-            if ( $tag_nr !== false ) {
+        if ( '' !== $atts['tag'] ) {
+            $tag_nr = array_search( sanitize_text_field( $atts['tag'] ), Turnverein_Trainingszeiten::$wochentage, true );
+            if ( false !== $tag_nr ) {
                 $slots = array_filter( $slots, fn( $s ) => (int) $s->wochentag === $tag_nr );
             }
         }
 
-        if ( empty( $slots ) ) {
-            return '<p class="tv-no-data">Keine Trainingszeiten für diese Auswahl gefunden.</p>';
+        // ── Plan of a single group ────────────────────────────────────────────
+        if ( '' !== $atts['gruppe_id'] || '' !== $atts['gruppe'] ) {
+            $gruppe = $this->find_gruppe( $atts['gruppe_id'], $atts['gruppe'] );
+            if ( ! $gruppe ) {
+                return '<p class="tv-no-data">Gruppe nicht gefunden.</p>';
+            }
+
+            $slots = array_filter( $slots, fn( $s ) => (int) $s->gruppe_id === (int) $gruppe->id );
+
+            ob_start();
+            $this->enqueue_styles();
+            ?>
+            <div class="tv-belegungsplan-sc tv-bp-mode-gruppe">
+                <?php if ( $show_titel ) : ?>
+                    <h3 class="tv-bp-title"><?php echo esc_html( $gruppe->name ); ?></h3>
+                <?php endif; ?>
+                <?php $this->render_plan_table( $slots, 'gruppe', $show_telefon ); ?>
+            </div>
+            <?php
+            return ob_get_clean();
         }
 
-        // Group: wochentag → slots (sorted by startzeit).
+        // ── Plan per facility (all, or a single one) ──────────────────────────
+        $sportstaetten = ( new Turnverein_Sportstaetten() )->get_all();
+        if ( '' !== $atts['sportstaette_id'] ) {
+            $filter_ss     = absint( $atts['sportstaette_id'] );
+            $sportstaetten = array_filter( $sportstaetten, fn( $ss ) => (int) $ss->id === $filter_ss );
+        }
+
+        if ( empty( $sportstaetten ) ) {
+            return '<p class="tv-no-data">Keine Sportstätte gefunden.</p>';
+        }
+
+        $by_ss = array();
+        foreach ( $slots as $slot ) {
+            $by_ss[ (int) $slot->sportstaette_id ][] = $slot;
+        }
+
+        $single = 1 === count( $sportstaetten );
+
+        ob_start();
+        $this->enqueue_styles();
+        ?>
+        <div class="tv-belegungsplan-sc">
+        <?php foreach ( $sportstaetten as $ss ) :
+            $ss_slots = $by_ss[ (int) $ss->id ] ?? array();
+            // In the full plan, facilities without training times are skipped.
+            if ( ! $single && empty( $ss_slots ) ) {
+                continue;
+            }
+            $adresse = trim( $ss->strasse . ', ' . trim( $ss->plz . ' ' . $ss->ort ), ', ' );
+        ?>
+            <div class="tv-bp-section">
+                <?php if ( $show_titel ) : ?>
+                    <h3 class="tv-bp-title"><?php echo esc_html( $ss->name ); ?></h3>
+                    <?php if ( $adresse ) : ?>
+                        <p class="tv-bp-adresse"><?php echo esc_html( $adresse ); ?></p>
+                    <?php endif; ?>
+                <?php endif; ?>
+                <?php $this->render_plan_table( $ss_slots, 'sportstaette', $show_telefon ); ?>
+            </div>
+        <?php endforeach; ?>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Outputs a weekday-grouped schedule table.
+     *
+     * @param object[] $slots        Slots from Turnverein_Trainingszeiten::get_all_with_details().
+     * @param string   $context      'sportstaette' shows the group column, 'gruppe' the facility column.
+     * @param bool     $show_telefon Whether to show the phone column.
+     */
+    private function render_plan_table( $slots, $context, $show_telefon ) {
+        if ( empty( $slots ) ) {
+            echo '<p class="tv-no-data">Keine Trainingszeiten eingetragen.</p>';
+            return;
+        }
+
         $by_tag = array();
         foreach ( $slots as $slot ) {
             $by_tag[ (int) $slot->wochentag ][] = $slot;
         }
         ksort( $by_tag );
 
-        ob_start();
-        $this->enqueue_styles();
+        $colspan = $show_telefon ? 4 : 3;
         ?>
-        <div class="tv-belegungsplan-sc">
-            <table class="tv-bp-table">
-                <tbody>
-                <?php foreach ( $by_tag as $tag_nr => $tag_slots ) :
-                    $tagname = Turnverein_Trainingszeiten::$wochentage[ $tag_nr ] ?? '';
-                    usort( $tag_slots, fn( $a, $b ) => strcmp( $a->startzeit, $b->startzeit ) );
-                ?>
-                    <tr class="tv-bp-tag-header">
-                        <td colspan="4"><strong><?php echo esc_html( $tagname ); ?></strong></td>
-                    </tr>
-                    <?php foreach ( $tag_slots as $slot ) : ?>
-                    <tr class="tv-bp-slot-row">
-                        <td class="tv-bp-zeit">
-                            <?php echo esc_html(
-                                substr( $slot->startzeit, 0, 5 ) . ' – ' .
-                                substr( $slot->endzeit,   0, 5 ) . ' Uhr'
-                            ); ?>
-                        </td>
-                        <td class="tv-bp-gruppe">
-                            <?php echo esc_html( $slot->gruppe_name ?: ( $slot->notiz ?: 'Freier Slot' ) ); ?>
-                            <?php if ( $slot->gruppe_id && $slot->notiz ) : ?>
-                                <br><small><?php echo esc_html( $slot->notiz ); ?></small>
-                            <?php endif; ?>
-                        </td>
-                        <td class="tv-bp-trainer"><?php echo esc_html( $slot->trainer_names ?: '' ); ?></td>
-                        <td class="tv-bp-telefon">
-                            <?php if ( $slot->trainer_telefone ) : ?>
-                                <?php echo esc_html( $slot->trainer_telefone ); ?>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
+        <table class="tv-bp-table">
+            <tbody>
+            <?php foreach ( $by_tag as $tag_nr => $tag_slots ) :
+                $tagname = Turnverein_Trainingszeiten::$wochentage[ $tag_nr ] ?? '';
+                usort( $tag_slots, fn( $a, $b ) => strcmp( $a->startzeit, $b->startzeit ) );
+            ?>
+                <tr class="tv-bp-tag-header">
+                    <td colspan="<?php echo esc_attr( $colspan ); ?>"><strong><?php echo esc_html( $tagname ); ?></strong></td>
+                </tr>
+                <?php foreach ( $tag_slots as $slot ) : ?>
+                <tr class="tv-bp-slot-row">
+                    <td class="tv-bp-zeit">
+                        <?php echo esc_html(
+                            substr( $slot->startzeit, 0, 5 ) . ' – ' .
+                            substr( $slot->endzeit,   0, 5 ) . ' Uhr'
+                        ); ?>
+                    </td>
+                    <?php if ( 'gruppe' === $context ) : ?>
+                    <td class="tv-bp-sportstaette">
+                        <?php echo esc_html( $slot->sportstaette_name ); ?>
+                        <?php if ( $slot->notiz ) : ?>
+                            <br><small><?php echo esc_html( $slot->notiz ); ?></small>
+                        <?php endif; ?>
+                    </td>
+                    <?php else : ?>
+                    <td class="tv-bp-gruppe">
+                        <?php echo esc_html( $slot->gruppe_name ?: ( $slot->notiz ?: 'Freier Slot' ) ); ?>
+                        <?php if ( $slot->gruppe_id && $slot->notiz ) : ?>
+                            <br><small><?php echo esc_html( $slot->notiz ); ?></small>
+                        <?php endif; ?>
+                    </td>
+                    <?php endif; ?>
+                    <td class="tv-bp-trainer"><?php echo esc_html( $slot->trainer_names ?: '' ); ?></td>
+                    <?php if ( $show_telefon ) : ?>
+                    <td class="tv-bp-telefon"><?php echo esc_html( $slot->trainer_telefone ?: '' ); ?></td>
+                    <?php endif; ?>
+                </tr>
                 <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
         <?php
-        return ob_get_clean();
+    }
+
+    /**
+     * Finds a group by ID or (fallback) by name.
+     *
+     * @param string $id   Group ID.
+     * @param string $name Group name.
+     * @return object|null
+     */
+    private function find_gruppe( $id, $name ) {
+        global $wpdb;
+        $repo = new Turnverein_Gruppen();
+
+        if ( '' !== $id ) {
+            return $repo->get( absint( $id ) );
+        }
+
+        return $wpdb->get_row( $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}tv_gruppen WHERE name = %s",
+            sanitize_text_field( $name )
+        ) );
     }
 
     // -------------------------------------------------------------------------
@@ -364,6 +457,10 @@ class Turnverein_Shortcodes {
 
         /* --- tv_belegungsplan --- */
         .tv-belegungsplan-sc { margin: 1.5em 0; overflow-x: auto; }
+        .tv-bp-section { margin-bottom: 2em; }
+        .tv-bp-title { margin: 0 0 .25em; font-size: 1.1em; }
+        .tv-bp-adresse { margin: 0 0 .5em; color: #666; font-size: .9em; }
+        .tv-bp-sportstaette { min-width: 180px; }
         .tv-bp-table { border-collapse: collapse; width: 100%; }
         .tv-bp-table td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
         .tv-bp-tag-header td {
