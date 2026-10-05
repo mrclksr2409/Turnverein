@@ -11,7 +11,7 @@ turnverein/
 │   ├── class-trainer.php          Repository Trainer (inkl. Bild-Helfer)
 │   ├── class-gruppen.php          Repository Gruppen + Trainer-Zuordnung
 │   ├── class-trainingszeiten.php  Repository Slots + Belegungsplan-Abfrage
-│   └── class-shortcodes.php       Alle Frontend-Shortcodes + Frontend-CSS
+│   └── class-shortcodes.php       Alle Frontend-Shortcodes (ohne CSS)
 ├── admin/
 │   ├── class-admin.php            Menüs, Formularverarbeitung, AJAX, Assets
 │   └── views/                     Admin-Templates
@@ -114,13 +114,7 @@ Verfügbar: `shortcode_atts_tv_belegungsplan`, `shortcode_atts_tv_gruppe_trainer
 
 ## Frontend-CSS
 
-Das CSS wird erst beim Rendern eines Shortcodes als Inline-Style (Handle `turnverein-frontend`) eingereiht und von WordPress im Footer ausgegeben. Es kann bei Bedarf entfernt werden:
-
-```php
-add_action( 'wp_print_footer_scripts', function () {
-    wp_dequeue_style( 'turnverein-frontend' );
-}, 1 );
-```
+Das Plugin lädt im Frontend kein CSS. Die Gestaltung erfolgt im Theme über die CSS-Klassen, siehe [[Design anpassen]].
 
 ## Release-Workflow
 

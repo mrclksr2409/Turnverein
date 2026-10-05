@@ -48,6 +48,9 @@ WordPress checks for updates automatically (every 12 hours by default). You can 
 
 ## Changelog
 
+### 1.6.0 — 2026-10-05
+- Changed: the plugin no longer outputs any frontend CSS. All CSS classes stay in place so the shortcodes can be styled in the theme; the former default styles are available as a template in the wiki (*Design anpassen*).
+
 ### 1.5.4 — 2026-10-05
 - Added: `trainer="nein"` option for `[tv_belegungsplan]` to hide the trainer column.
 

@@ -93,7 +93,6 @@ class Turnverein_Shortcodes {
         }
 
         ob_start();
-        $this->enqueue_styles();
         ?>
         <div class="tv-gruppe-trainer">
         <?php
@@ -193,7 +192,6 @@ class Turnverein_Shortcodes {
             $slots = array_filter( $slots, fn( $s ) => (int) $s->gruppe_id === (int) $gruppe->id );
 
             ob_start();
-            $this->enqueue_styles();
             ?>
             <div class="tv-belegungsplan-sc tv-bp-mode-gruppe">
                 <?php
@@ -228,7 +226,6 @@ class Turnverein_Shortcodes {
         $single = 1 === count( $sportstaetten );
 
         ob_start();
-        $this->enqueue_styles();
         ?>
         <div class="tv-belegungsplan-sc">
         <?php
@@ -400,7 +397,6 @@ class Turnverein_Shortcodes {
         }
 
         ob_start();
-        $this->enqueue_styles();
         ?>
         <div class="tv-sportstaetten-sc">
             <?php
@@ -564,85 +560,5 @@ class Turnverein_Shortcodes {
      */
     private function is_truthy( $value ) {
         return in_array( strtolower( trim( (string) $value ) ), array( 'ja', 'yes', '1', 'true', 'on' ), true );
-    }
-
-    // -------------------------------------------------------------------------
-    // Frontend-CSS (einmalig einbinden)
-    // -------------------------------------------------------------------------
-
-    private static $styles_added = false;
-
-    private function enqueue_styles() {
-        if ( self::$styles_added ) {
-            return;
-        }
-        self::$styles_added = true;
-
-        // Shortcodes render after wp_head, so the style is enqueued late and printed in the footer.
-        wp_register_style( 'turnverein-frontend', false, array(), TURNVEREIN_VERSION );
-        wp_add_inline_style( 'turnverein-frontend', $this->get_styles() );
-        wp_enqueue_style( 'turnverein-frontend' );
-    }
-
-    private function get_styles() {
-        ob_start();
-        ?>
-        /* --- tv_gruppe_trainer --- */
-        .tv-gruppe-trainer { margin: 1.5em 0; }
-        .tv-gt-gruppe { margin-bottom: 1.5em; }
-        .tv-gt-gruppe-name { margin: 0 0 .5em; }
-        .tv-gt-gruppe-name:not(.tv-sc-titel) { font-size: 1.1em; }
-        .tv-gt-table { border-collapse: collapse; width: 100%; max-width: 480px; }
-        .tv-gt-table td { padding: 5px 10px 5px 0; border-bottom: 1px solid #e5e7eb; }
-        .tv-gt-table tr:last-child td { border-bottom: none; }
-        .tv-gt-name { font-weight: 600; }
-        .tv-gt-telefon { color: #555; }
-        .tv-gt-telefon a { color: inherit; text-decoration: none; }
-        .tv-gt-telefon a:hover { text-decoration: underline; }
-        .tv-gt-table td { vertical-align: middle; }
-        .tv-gt-bild { width: 64px; }
-        .tv-gt-img { display: block; width: 56px; height: 56px; object-fit: cover; border-radius: 50%; }
-        .tv-gt-email a { color: inherit; }
-
-        /* --- tv_sportstaetten --- */
-        .tv-sportstaetten-sc { margin: 1.5em 0; overflow-x: auto; }
-        .tv-ss-table { border-collapse: collapse; width: 100%; }
-        .tv-ss-table th,
-        .tv-ss-table td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: top; }
-        .tv-ss-table thead th { background: #f3f4f6; border-bottom: 2px solid #d1d5db; }
-        .tv-ss-table tbody tr:last-child td { border-bottom: none; }
-        .tv-ss-kapazitaet { white-space: nowrap; }
-        @media (max-width: 600px) {
-            .tv-ss-table thead { display: none; }
-            .tv-ss-table tr { display: block; border-bottom: 1px solid #e5e7eb; padding: 6px 0; }
-            .tv-ss-table td { display: block; border: none; padding: 4px 0; }
-            .tv-ss-table td:not(.tv-ss-name)::before { content: attr(data-label) ": "; font-weight: 600; }
-        }
-
-        /* --- tv_belegungsplan --- */
-        .tv-belegungsplan-sc { margin: 1.5em 0; overflow-x: auto; }
-        .tv-bp-section { margin-bottom: 2em; }
-        .tv-bp-title { margin: 0 0 .25em; }
-        .tv-bp-title:not(.tv-sc-titel) { font-size: 1.1em; }
-        .tv-bp-adresse { margin: 0 0 .5em; color: #666; font-size: .9em; }
-        .tv-bp-sportstaette { min-width: 180px; }
-        .tv-bp-table { border-collapse: collapse; width: 100%; }
-        .tv-bp-table td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
-        .tv-bp-tag-header td {
-            background: #f3f4f6;
-            border-bottom: 2px solid #d1d5db;
-            padding: 10px 12px 8px;
-            font-size: .95em;
-            letter-spacing: .02em;
-        }
-        .tv-bp-slot-row:last-of-type td { border-bottom: none; }
-        .tv-bp-zeit    { white-space: nowrap; color: #555; width: 160px; }
-        .tv-bp-gruppe  { min-width: 180px; }
-        .tv-bp-trainer { width: 180px; }
-        .tv-bp-telefon { width: 140px; }
-        .tv-sc-titel:not(.tv-gt-gruppe-name):not(.tv-bp-title) { margin: 0 0 .75em; }
-        .tv-no-data { color: #888; }
-        <?php
-        return ob_get_clean();
     }
 }
