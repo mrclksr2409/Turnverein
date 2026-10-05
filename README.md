@@ -16,7 +16,7 @@ WordPress plugin for managing sports facilities, trainers, groups and training t
 |---|---|---|
 | `[tv_sportstaetten]` | Table of all facilities in the admin order | `id="1"` – single facility; `spalten="name,adresse,kapazitaet,beschreibung"` – columns and their order (default: `name,adresse,kapazitaet`); `titel="Text"` – heading above the table; `ebene="h2"` |
 | `[tv_gruppe_trainer]` | Trainers per group with image and phone number | `id="3"` or `gruppe="Name"` – single group; `bild="nein"` – hide images; `email="ja"` – show e-mail; `titel="nein"` – hide group heading, `titel="Text"` – custom heading; `ebene="h2"` |
-| `[tv_belegungsplan]` | Full training schedule, one section per facility (admin order), grouped by weekday | `sportstaette_id="1"` – single facility; `gruppe_id="3"` or `gruppe="Name"` – training times of one group; `tag="Montag"`; `titel="nein"` – hide headings, `titel="Text"` – custom heading; `ebene="h2"`; `telefon="nein"` – hide phone column |
+| `[tv_belegungsplan]` | Full training schedule, one section per facility (admin order), grouped by weekday | `sportstaette_id="1"` – single facility; `gruppe_id="3"` or `gruppe="Name"` – training times of one group; `tag="Montag"`; `titel="nein"` – hide headings, `titel="Text"` – custom heading; `ebene="h2"`; `trainer="nein"` – hide trainer column; `telefon="nein"` – hide phone column |
 
 **Custom title:** `titel="Any text"` replaces the automatic heading when a single group or facility is shown; otherwise it appears as an additional heading above the whole output. `ebene` sets the level of the top-most heading (`h2`–`h6`, default `h3`) – also for the automatic group/facility headings; below a custom title they are one level lower. Typographic quotes (`„…“`, `“…”`) are accepted as well.
 
@@ -47,6 +47,9 @@ This plugin uses the [Plugin Update Checker](https://github.com/YahnisElsts/plug
 WordPress checks for updates automatically (every 12 hours by default). You can trigger a manual check under **Plugins → Check for updates**.
 
 ## Changelog
+
+### 1.5.4 — 2026-10-05
+- Added: `trainer="nein"` option for `[tv_belegungsplan]` to hide the trainer column.
 
 ### 1.5.3 — 2026-10-05
 - Fixed: `titel` and `ebene` were ignored or cut off when the editor turned the quotes into typographic quotes (`„…“`, `“…”`).

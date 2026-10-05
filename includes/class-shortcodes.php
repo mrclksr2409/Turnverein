@@ -16,7 +16,7 @@
  * [tv_belegungsplan]                    – Vollständiger Plan, je Sportstätte ein Abschnitt
  * [tv_belegungsplan sportstaette_id="1"] – Plan einer Sportstätte
  * [tv_belegungsplan gruppe_id="3"]       – Trainingszeiten einer Gruppe (alternativ gruppe="Name")
- *   Optionen: tag="Montag", titel="ja|nein|Eigener Text", telefon="ja|nein"
+ *   Optionen: tag="Montag", titel="ja|nein|Eigener Text", trainer="ja|nein", telefon="ja|nein"
  *
  * Eigener Titel: ersetzt bei einer einzelnen Gruppe/Sportstätte deren Namen,
  * sonst erscheint er als Überschrift über der gesamten Ausgabe.
@@ -162,12 +162,14 @@ class Turnverein_Shortcodes {
             'tag'             => '',    // e.g. "Montag"
             'titel'           => 'ja',  // "ja", "nein" or a custom heading text
             'ebene'           => 'h3',  // level of the top-most heading
+            'trainer'         => 'ja',  // trainer column
             'telefon'         => 'ja',  // trainer phone column
         ), $atts, 'tv_belegungsplan' );
 
         $titel        = $this->parse_titel( $atts['titel'] );
         $tag          = $this->heading_tag( $atts['ebene'] );
         $sub_tag      = $this->sub_heading_tag( $tag );
+        $show_trainer = $this->is_truthy( $atts['trainer'] );
         $show_telefon = $this->is_truthy( $atts['telefon'] );
 
         $tz    = new Turnverein_Trainingszeiten();
@@ -201,7 +203,7 @@ class Turnverein_Shortcodes {
                     $this->render_heading( $gruppe->name, $tag, 'tv-bp-title' );
                 }
                 ?>
-                <?php $this->render_plan_table( $slots, 'gruppe', $show_telefon ); ?>
+                <?php $this->render_plan_table( $slots, 'gruppe', $show_trainer, $show_telefon ); ?>
             </div>
             <?php
             return ob_get_clean();
@@ -258,7 +260,7 @@ class Turnverein_Shortcodes {
                         <p class="tv-bp-adresse"><?php echo esc_html( $adresse ); ?></p>
                     <?php endif; ?>
                 <?php endif; ?>
-                <?php $this->render_plan_table( $ss_slots, 'sportstaette', $show_telefon ); ?>
+                <?php $this->render_plan_table( $ss_slots, 'sportstaette', $show_trainer, $show_telefon ); ?>
             </div>
         <?php endforeach; ?>
         </div>
@@ -271,9 +273,10 @@ class Turnverein_Shortcodes {
      *
      * @param object[] $slots        Slots from Turnverein_Trainingszeiten::get_all_with_details().
      * @param string   $context      'sportstaette' shows the group column, 'gruppe' the facility column.
+     * @param bool     $show_trainer Whether to show the trainer column.
      * @param bool     $show_telefon Whether to show the phone column.
      */
-    private function render_plan_table( $slots, $context, $show_telefon ) {
+    private function render_plan_table( $slots, $context, $show_trainer, $show_telefon ) {
         if ( empty( $slots ) ) {
             echo '<p class="tv-no-data">Keine Trainingszeiten eingetragen.</p>';
             return;
@@ -285,7 +288,7 @@ class Turnverein_Shortcodes {
         }
         ksort( $by_tag );
 
-        $colspan = $show_telefon ? 4 : 3;
+        $colspan = 2 + (int) $show_trainer + (int) $show_telefon;
         ?>
         <table class="tv-bp-table">
             <tbody>
@@ -319,7 +322,9 @@ class Turnverein_Shortcodes {
                         <?php endif; ?>
                     </td>
                     <?php endif; ?>
+                    <?php if ( $show_trainer ) : ?>
                     <td class="tv-bp-trainer"><?php echo esc_html( $slot->trainer_names ?: '' ); ?></td>
+                    <?php endif; ?>
                     <?php if ( $show_telefon ) : ?>
                     <td class="tv-bp-telefon"><?php echo esc_html( $slot->trainer_telefone ?: '' ); ?></td>
                     <?php endif; ?>

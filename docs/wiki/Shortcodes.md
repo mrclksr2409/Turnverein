@@ -55,7 +55,7 @@ Werte mit Leerzeichen gehören in Anführungszeichen: `titel="Unsere Trainer"`. 
 
 ### Ja/Nein-Werte
 
-Optionen wie `bild`, `email` oder `telefon` akzeptieren `ja` / `nein`. Alternativ funktionieren auch `yes`, `1`, `true`, `on` bzw. `no`, `0`, `false`, `off`.
+Optionen wie `bild`, `email`, `trainer` oder `telefon` akzeptieren `ja` / `nein`. Alternativ funktionieren auch `yes`, `1`, `true`, `on` bzw. `no`, `0`, `false`, `off`.
 
 ## IDs herausfinden
 
