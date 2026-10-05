@@ -22,6 +22,10 @@ WordPress plugin for managing sports facilities, trainers, groups and training t
 
 The matching shortcode for a single facility or group is shown on its detail page in the admin.
 
+## Documentation
+
+Full documentation (German) is available in the [GitHub wiki](https://github.com/mrclksr2409/Turnverein/wiki). Its source lives in [`docs/wiki/`](docs/wiki/) and is synced to the wiki automatically on every push to `main` by the workflow `.github/workflows/wiki.yml`.
+
 ## Requirements
 
 - WordPress 6.0+
@@ -46,6 +50,7 @@ WordPress checks for updates automatically (every 12 hours by default). You can 
 
 ### 1.5.2 — 2026-10-05
 - Added: custom headings for all shortcodes via `titel="Text"`, heading level via `ebene="h2"`…`h6`.
+- Added: detailed wiki in `docs/wiki/`, synced to the GitHub wiki on every push to `main`.
 
 ### 1.5.1 — 2026-10-05
 - Changed: `[tv_belegungsplan]` without attributes now renders the full schedule with one section (name and address) per facility.

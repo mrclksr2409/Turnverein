@@ -1,0 +1,1 @@
+Turnverein Manager {{VERSION}} · automatisch aktualisiert am {{DATE}} aus Commit [`{{COMMIT}}`](https://github.com/mrclksr2409/Turnverein/commit/{{COMMIT}}) · Quelle: [`docs/wiki/`](https://github.com/mrclksr2409/Turnverein/tree/main/docs/wiki)

@@ -1,0 +1,75 @@
+name: Update wiki
+
+# Syncs docs/wiki/ into the GitHub wiki on every push to main.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wiki
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build wiki pages
+        run: |
+          set -euo pipefail
+          VERSION=$(sed -n 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*//p' turnverein.php | head -n1 | tr -d '\r')
+          DATE=$(TZ=Europe/Berlin git log -1 --format=%cd --date=format-local:'%d.%m.%Y')
+          COMMIT=$(git rev-parse --short HEAD)
+
+          mkdir -p build
+          cp -R docs/wiki/. build/
+
+          # Changelog page generated from the README.
+          {
+            echo "# Changelog"
+            echo
+            echo "_Automatisch übernommen aus der [README](https://github.com/mrclksr2409/Turnverein/blob/main/README.md)._"
+            echo
+            awk '/^## Changelog/{f=1; next} f && /^## /{exit} f' README.md
+          } > build/Changelog.md
+
+          # Placeholders; {{!NAME}} escapes a literal {{NAME}}.
+          find build -name '*.md' -print0 | xargs -0 sed -i \
+            -e "s/{{VERSION}}/${VERSION}/g" \
+            -e "s/{{DATE}}/${DATE}/g" \
+            -e "s/{{COMMIT}}/${COMMIT}/g" \
+            -e 's/{{!/{{/g'
+
+          echo "Version ${VERSION}, ${DATE}, ${COMMIT}"
+          ls -1 build
+
+      - name: Push to wiki
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if ! git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" wiki; then
+            echo "::error::Wiki repository not found. Enable the wiki in the repository settings and create the first page once via the GitHub UI."
+            exit 1
+          fi
+
+          # Mirror build/ into the wiki (pages removed from docs/wiki/ are removed from the wiki too).
+          find wiki -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -R build/. wiki/
+
+          cd wiki
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Wiki already up to date."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "docs: sync wiki from ${GITHUB_SHA::7}"
+          git push
