@@ -18,7 +18,7 @@ WordPress plugin for managing sports facilities, trainers, groups and training t
 | `[tv_gruppe_trainer]` | Trainers per group with image and phone number | `id="3"` or `gruppe="Name"` – single group; `bild="nein"` – hide images; `email="ja"` – show e-mail; `titel="nein"` – hide group heading, `titel="Text"` – custom heading; `ebene="h2"` |
 | `[tv_belegungsplan]` | Full training schedule, one section per facility (admin order), grouped by weekday | `sportstaette_id="1"` – single facility; `gruppe_id="3"` or `gruppe="Name"` – training times of one group; `tag="Montag"`; `titel="nein"` – hide headings, `titel="Text"` – custom heading; `ebene="h2"`; `telefon="nein"` – hide phone column |
 
-**Custom title:** `titel="Any text"` replaces the automatic heading when a single group or facility is shown; otherwise it appears as an additional heading above the whole output. `ebene` sets its heading level (`h2`–`h6`, default `h3`).
+**Custom title:** `titel="Any text"` replaces the automatic heading when a single group or facility is shown; otherwise it appears as an additional heading above the whole output. `ebene` sets the level of the top-most heading (`h2`–`h6`, default `h3`) – also for the automatic group/facility headings; below a custom title they are one level lower. Typographic quotes (`„…“`, `“…”`) are accepted as well.
 
 The matching shortcode for a single facility or group is shown on its detail page in the admin.
 
@@ -47,6 +47,11 @@ This plugin uses the [Plugin Update Checker](https://github.com/YahnisElsts/plug
 WordPress checks for updates automatically (every 12 hours by default). You can trigger a manual check under **Plugins → Check for updates**.
 
 ## Changelog
+
+### 1.5.3 — 2026-10-05
+- Fixed: `titel` and `ebene` were ignored or cut off when the editor turned the quotes into typographic quotes (`„…“`, `“…”`).
+- Fixed: `ebene` now also applies to the automatic group/facility headings; below a custom title they are one level lower.
+- Fixed: custom titles are no longer forced to a fixed font size, so the chosen level is visible.
 
 ### 1.5.2 — 2026-10-05
 - Added: custom headings for all shortcodes via `titel="Text"`, heading level via `ebene="h2"`…`h6`.

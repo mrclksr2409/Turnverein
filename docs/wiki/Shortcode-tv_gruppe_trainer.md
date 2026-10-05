@@ -21,7 +21,7 @@ Gruppen werden alphabetisch ausgegeben, Trainer nach Nachname. Gruppen **ohne** 
 | `bild` | `ja` / `nein` | `ja` | Trainerbild anzeigen |
 | `email` | `ja` / `nein` | `nein` | E-Mail-Adresse anzeigen |
 | `titel` | `ja` / `nein` / Text | `ja` | Überschriften, siehe [[Shortcodes]] |
-| `ebene` | `h2` … `h6` | `h3` | Ebene der eigenen Überschrift |
+| `ebene` | `h2` … `h6` | `h3` | Ebene der obersten Überschrift, siehe [[Shortcodes]] |
 
 ## Hinweise
 

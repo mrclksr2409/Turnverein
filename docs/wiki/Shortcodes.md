@@ -42,9 +42,16 @@ Bei `[tv_sportstaetten]` gibt es keine automatische Überschrift; dort erscheint
 
 ### `ebene` – Überschriften-Ebene
 
-Legt fest, als welche Überschrift der **eigene Titel** ausgegeben wird: `h2`, `h3`, `h4`, `h5` oder `h6`. Standard ist `h3`. Ungültige Werte werden ignoriert.
+Legt die Ebene der **obersten Überschrift** fest: `h2`, `h3`, `h4`, `h5` oder `h6`. Standard ist `h3`. Ungültige Werte werden ignoriert.
+
+- Ohne eigenen Titel gilt die Ebene für die automatischen Überschriften (Gruppen- bzw. Sportstättennamen).
+- Mit eigenem Titel gilt sie für den Titel; darunter stehende Gruppen-/Sportstättennamen liegen automatisch eine Ebene tiefer (z. B. `h2` → `h3`).
 
 > 💡 Für eine saubere Gliederung (und Barrierefreiheit) sollte die Ebene zur Seite passen: Steht der Shortcode direkt unter der Seitenüberschrift (`h1`), ist `ebene="h2"` meist richtig.
+
+### Anführungszeichen
+
+Werte mit Leerzeichen gehören in Anführungszeichen: `titel="Unsere Trainer"`. Wandelt der Editor sie in typografische Anführungszeichen um (`„…“` oder `“…”`), erkennt das Plugin sie trotzdem.
 
 ### Ja/Nein-Werte
 

@@ -20,7 +20,8 @@
  *
  * Eigener Titel: ersetzt bei einer einzelnen Gruppe/Sportstätte deren Namen,
  * sonst erscheint er als Überschrift über der gesamten Ausgabe.
- * ebene="h2" … "h6" legt die Überschriften-Ebene des eigenen Titels fest (Standard: h3).
+ * ebene="h2" … "h6" legt die Ebene der obersten Überschrift fest (Standard: h3);
+ * Gruppen-/Sportstätten-Überschriften unter einem eigenen Titel liegen eine Ebene tiefer.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -42,6 +43,7 @@ class Turnverein_Shortcodes {
     public function shortcode_gruppe_trainer( $atts ) {
         global $wpdb;
 
+        $atts = $this->normalize_atts( $atts );
         $atts = shortcode_atts( array(
             'id'     => '',
             'gruppe' => '',
@@ -55,6 +57,7 @@ class Turnverein_Shortcodes {
         $show_email = $this->is_truthy( $atts['email'] );
         $titel      = $this->parse_titel( $atts['titel'] );
         $tag        = $this->heading_tag( $atts['ebene'] );
+        $sub_tag    = $this->sub_heading_tag( $tag );
 
         $gruppen_table = $wpdb->prefix . 'tv_gruppen';
         $pivot_table   = $wpdb->prefix . 'tv_gruppen_trainer';
@@ -99,14 +102,16 @@ class Turnverein_Shortcodes {
         if ( '' !== $titel['text'] && ! $single ) {
             $this->render_heading( $titel['text'], $tag, 'tv-sc-titel' );
         }
+        // Group headings sit one level below a custom title above them.
+        $gruppe_tag = ( '' !== $titel['text'] && ! $single ) ? $sub_tag : $tag;
         ?>
         <?php foreach ( $by_gruppe as $gruppenname => $trainer_list ) : ?>
             <div class="tv-gt-gruppe">
                 <?php
                 if ( '' !== $titel['text'] && $single ) {
-                    $this->render_heading( $titel['text'], $tag, 'tv-gt-gruppe-name' );
+                    $this->render_heading( $titel['text'], $tag, 'tv-gt-gruppe-name tv-sc-titel' );
                 } elseif ( $titel['show'] ) {
-                    $this->render_heading( $gruppenname, 'h3', 'tv-gt-gruppe-name' );
+                    $this->render_heading( $gruppenname, $gruppe_tag, 'tv-gt-gruppe-name' );
                 }
                 ?>
                 <table class="tv-gt-table">
@@ -149,18 +154,20 @@ class Turnverein_Shortcodes {
     // -------------------------------------------------------------------------
 
     public function shortcode_belegungsplan( $atts ) {
+        $atts = $this->normalize_atts( $atts );
         $atts = shortcode_atts( array(
             'sportstaette_id' => '',
             'gruppe_id'       => '',
             'gruppe'          => '',    // group name, alternative to gruppe_id
             'tag'             => '',    // e.g. "Montag"
             'titel'           => 'ja',  // "ja", "nein" or a custom heading text
-            'ebene'           => 'h3',  // heading level of a custom title
+            'ebene'           => 'h3',  // level of the top-most heading
             'telefon'         => 'ja',  // trainer phone column
         ), $atts, 'tv_belegungsplan' );
 
         $titel        = $this->parse_titel( $atts['titel'] );
         $tag          = $this->heading_tag( $atts['ebene'] );
+        $sub_tag      = $this->sub_heading_tag( $tag );
         $show_telefon = $this->is_truthy( $atts['telefon'] );
 
         $tz    = new Turnverein_Trainingszeiten();
@@ -189,9 +196,9 @@ class Turnverein_Shortcodes {
             <div class="tv-belegungsplan-sc tv-bp-mode-gruppe">
                 <?php
                 if ( '' !== $titel['text'] ) {
-                    $this->render_heading( $titel['text'], $tag, 'tv-bp-title' );
+                    $this->render_heading( $titel['text'], $tag, 'tv-bp-title tv-sc-titel' );
                 } elseif ( $titel['show'] ) {
-                    $this->render_heading( $gruppe->name, 'h3', 'tv-bp-title' );
+                    $this->render_heading( $gruppe->name, $tag, 'tv-bp-title' );
                 }
                 ?>
                 <?php $this->render_plan_table( $slots, 'gruppe', $show_telefon ); ?>
@@ -227,6 +234,8 @@ class Turnverein_Shortcodes {
         if ( '' !== $titel['text'] && ! $single ) {
             $this->render_heading( $titel['text'], $tag, 'tv-sc-titel' );
         }
+        // Facility headings sit one level below a custom title above them.
+        $ss_tag = ( '' !== $titel['text'] && ! $single ) ? $sub_tag : $tag;
         ?>
         <?php foreach ( $sportstaetten as $ss ) :
             $ss_slots = $by_ss[ (int) $ss->id ] ?? array();
@@ -240,9 +249,9 @@ class Turnverein_Shortcodes {
                 <?php if ( $titel['show'] ) : ?>
                     <?php
                     if ( '' !== $titel['text'] && $single ) {
-                        $this->render_heading( $titel['text'], $tag, 'tv-bp-title' );
+                        $this->render_heading( $titel['text'], $tag, 'tv-bp-title tv-sc-titel' );
                     } else {
-                        $this->render_heading( $ss->name, 'h3', 'tv-bp-title' );
+                        $this->render_heading( $ss->name, $ss_tag, 'tv-bp-title' );
                     }
                     ?>
                     <?php if ( $adresse ) : ?>
@@ -348,6 +357,7 @@ class Turnverein_Shortcodes {
     // -------------------------------------------------------------------------
 
     public function shortcode_sportstaetten( $atts ) {
+        $atts = $this->normalize_atts( $atts );
         $atts = shortcode_atts( array(
             'id'      => '',
             'spalten' => 'name,adresse,kapazitaet',
@@ -461,6 +471,50 @@ class Turnverein_Shortcodes {
     }
 
     /**
+     * Repairs attributes written with typographic quotes.
+     *
+     * Editors and keyboards often turn "…" into „…“ or “…”. WordPress only
+     * understands straight quotes, so such attributes end up split into
+     * fragments (titel => „Unsere, 0 => Trainer“) and e.g. ebene => „h2“.
+     * The attribute string is rebuilt with straight quotes and parsed again.
+     *
+     * @param array|string $atts Raw shortcode attributes.
+     * @return array|string
+     */
+    private function normalize_atts( $atts ) {
+        if ( ! is_array( $atts ) || empty( $atts ) ) {
+            return $atts;
+        }
+
+        $quotes = array( '„', '“', '”', '‟', '″', '«', '»', '&#8222;', '&#8220;', '&#8221;', '&#171;', '&#187;', '&quot;' );
+        $found  = false;
+        foreach ( $atts as $value ) {
+            if ( (string) $value !== str_replace( $quotes, '', (string) $value ) ) {
+                $found = true;
+                break;
+            }
+        }
+        if ( ! $found ) {
+            return $atts;
+        }
+
+        $parts = array();
+        foreach ( $atts as $key => $value ) {
+            $value = str_replace( $quotes, '"', (string) $value );
+            if ( is_int( $key ) ) {
+                $parts[] = $value;
+            } elseif ( false !== strpos( $value, '"' ) ) {
+                $parts[] = $key . '=' . $value;
+            } else {
+                $parts[] = $key . '="' . $value . '"';
+            }
+        }
+
+        $parsed = shortcode_parse_atts( implode( ' ', $parts ) );
+        return is_array( $parsed ) ? $parsed : $atts;
+    }
+
+    /**
      * Returns a safe heading tag (h2–h6), falling back to h3.
      *
      * @param string $value Attribute value.
@@ -469,6 +523,16 @@ class Turnverein_Shortcodes {
     private function heading_tag( $value ) {
         $value = strtolower( trim( (string) $value ) );
         return in_array( $value, array( 'h2', 'h3', 'h4', 'h5', 'h6' ), true ) ? $value : 'h3';
+    }
+
+    /**
+     * Returns the heading tag one level below the given one (at most h6).
+     *
+     * @param string $tag Heading tag (validated via heading_tag()).
+     * @return string
+     */
+    private function sub_heading_tag( $tag ) {
+        return 'h' . min( 6, (int) substr( $tag, 1 ) + 1 );
     }
 
     /**
@@ -521,7 +585,8 @@ class Turnverein_Shortcodes {
         /* --- tv_gruppe_trainer --- */
         .tv-gruppe-trainer { margin: 1.5em 0; }
         .tv-gt-gruppe { margin-bottom: 1.5em; }
-        .tv-gt-gruppe-name { margin: 0 0 .5em; font-size: 1.1em; }
+        .tv-gt-gruppe-name { margin: 0 0 .5em; }
+        .tv-gt-gruppe-name:not(.tv-sc-titel) { font-size: 1.1em; }
         .tv-gt-table { border-collapse: collapse; width: 100%; max-width: 480px; }
         .tv-gt-table td { padding: 5px 10px 5px 0; border-bottom: 1px solid #e5e7eb; }
         .tv-gt-table tr:last-child td { border-bottom: none; }
@@ -552,7 +617,8 @@ class Turnverein_Shortcodes {
         /* --- tv_belegungsplan --- */
         .tv-belegungsplan-sc { margin: 1.5em 0; overflow-x: auto; }
         .tv-bp-section { margin-bottom: 2em; }
-        .tv-bp-title { margin: 0 0 .25em; font-size: 1.1em; }
+        .tv-bp-title { margin: 0 0 .25em; }
+        .tv-bp-title:not(.tv-sc-titel) { font-size: 1.1em; }
         .tv-bp-adresse { margin: 0 0 .5em; color: #666; font-size: .9em; }
         .tv-bp-sportstaette { min-width: 180px; }
         .tv-bp-table { border-collapse: collapse; width: 100%; }
@@ -569,7 +635,7 @@ class Turnverein_Shortcodes {
         .tv-bp-gruppe  { min-width: 180px; }
         .tv-bp-trainer { width: 180px; }
         .tv-bp-telefon { width: 140px; }
-        .tv-sc-titel { margin: 0 0 .75em; }
+        .tv-sc-titel:not(.tv-gt-gruppe-name):not(.tv-bp-title) { margin: 0 0 .75em; }
         .tv-no-data { color: #888; }
         <?php
         return ob_get_clean();

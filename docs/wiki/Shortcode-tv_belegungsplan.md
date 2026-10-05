@@ -53,7 +53,7 @@ Ist am Slot ein bestimmter Trainer gewählt, erscheint nur dieser – sonst alle
 | `gruppe` | Text | – | Gruppe über den Namen (Alternative zu `gruppe_id`) |
 | `tag` | `Montag` … `Sonntag` | – | Nur dieser Wochentag (Groß-/Kleinschreibung beachten; ein unbekannter Wert wird ignoriert) |
 | `titel` | `ja` / `nein` / Text | `ja` | Überschriften, siehe [[Shortcodes]] |
-| `ebene` | `h2` … `h6` | `h3` | Ebene der eigenen Überschrift |
+| `ebene` | `h2` … `h6` | `h3` | Ebene der obersten Überschrift, siehe [[Shortcodes]] |
 | `telefon` | `ja` / `nein` | `ja` | Telefonspalte anzeigen |
 
 Werden `gruppe_id`/`gruppe` **und** `sportstaette_id` angegeben, hat die Gruppe Vorrang.

@@ -12,7 +12,7 @@ Eigene Anpassungen am besten unter **Design → Customizer → Zusätzliches CSS
 
 | Klasse | Element |
 |---|---|
-| `.tv-sc-titel` | Eigene Überschrift über der gesamten Ausgabe (`titel="…"`) |
+| `.tv-sc-titel` | Eigene Überschrift (`titel="…"`) – über der gesamten Ausgabe oder anstelle des Namens |
 | `.tv-no-data` | Hinweistexte wie „Keine Trainer gefunden.“ |
 
 ### `[tv_belegungsplan]`
