@@ -3,7 +3,7 @@
  * Plugin Name: Turnverein Manager
  * Plugin URI:  https://github.com/mrclksr2409/Turnverein
  * Description: Verwaltung von Sportstätten, Trainern und Gruppen für Turnvereine.
- * Version:     1.4.0
+ * Version:     1.5.0
  * Author:      Turnverein
  * License:     GPL-2.0+
  * Text Domain: turnverein
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TURNVEREIN_VERSION', '1.4.0' );
+define( 'TURNVEREIN_VERSION', '1.5.0' );
 define( 'TURNVEREIN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TURNVEREIN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 

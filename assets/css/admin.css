@@ -320,3 +320,101 @@
     border-left: 3px solid #5b8e3e;
     color: #3c6624;
 }
+
+/* Shortcode hints */
+.tv-shortcode-box {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: .75rem 1rem;
+    margin: 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 2rem;
+    align-items: center;
+}
+
+.tv-shortcode-box h2 {
+    width: 100%;
+    margin: 0;
+}
+
+.tv-shortcode-box p {
+    margin: 0;
+    width: 100%;
+}
+
+.tv-shortcode-input {
+    font-family: Consolas, Monaco, monospace;
+    cursor: text;
+}
+
+/* Sportstätten: drag & drop */
+.tv-col-sort {
+    width: 32px;
+}
+
+.tv-sort-handle {
+    cursor: move;
+    color: #8c8f94;
+}
+
+.tv-sort-handle:hover {
+    color: #2271b1;
+}
+
+.tv-sort-placeholder {
+    height: 42px;
+    background: #f0f6fc;
+    outline: 1px dashed #2271b1;
+}
+
+.tv-sort-status {
+    margin-left: .5rem;
+    font-style: normal;
+    color: #00a32a;
+}
+
+/* Trainer image */
+.tv-col-bild {
+    width: 52px;
+}
+
+.tv-trainer-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: middle;
+}
+
+.tv-trainer-thumb--empty {
+    font-size: 28px;
+    line-height: 40px;
+    text-align: center;
+    color: #c3c4c7;
+}
+
+.tv-trainer-heading {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.tv-trainer-heading .tv-trainer-thumb {
+    width: 64px;
+    height: 64px;
+}
+
+.tv-bild-preview img {
+    display: block;
+    max-width: 150px;
+    height: auto;
+    margin-bottom: .5rem;
+    border-radius: 4px;
+}
+
+.tv-bild-remove {
+    margin-left: .5rem !important;
+    color: #b32d2e !important;
+}

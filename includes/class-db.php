@@ -18,8 +18,10 @@ class Turnverein_DB {
             ort         VARCHAR(100) DEFAULT '',
             kapazitaet  INT(11)      DEFAULT 0,
             beschreibung TEXT        DEFAULT '',
+            sortierung  INT(11)      NOT NULL DEFAULT 0,
             erstellt_am DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id)
+            PRIMARY KEY (id),
+            KEY sortierung (sortierung)
         ) $charset_collate;";
 
         $sql_trainer = "CREATE TABLE {$wpdb->prefix}tv_trainer (
@@ -30,6 +32,7 @@ class Turnverein_DB {
             telefon     VARCHAR(50)  DEFAULT '',
             sportart    VARCHAR(255) DEFAULT '',
             lizenz      VARCHAR(100) DEFAULT '',
+            bild_id     BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
             erstellt_am DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id)
         ) $charset_collate;";

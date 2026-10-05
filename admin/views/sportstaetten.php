@@ -18,18 +18,26 @@
     <hr class="wp-header-end">
 
     <?php if ( $items ) : ?>
-    <table class="wp-list-table widefat fixed striped">
+    <p class="description">
+        Reihenfolge per Drag &amp; Drop am Griff <span class="dashicons dashicons-menu" aria-hidden="true"></span> ändern – sie gilt auch für Belegungsplan und Shortcodes.
+        <span id="tv-sort-status" class="tv-sort-status" role="status" aria-live="polite"></span>
+    </p>
+    <table class="wp-list-table widefat fixed striped tv-sortable-table">
         <thead>
             <tr>
+                <th class="tv-col-sort"><span class="screen-reader-text">Sortieren</span></th>
                 <th>Name</th>
                 <th>Adresse</th>
                 <th>Kapazität</th>
                 <th>Aktionen</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="tv-sportstaetten-sortable">
             <?php foreach ( $items as $item ) : ?>
-            <tr>
+            <tr data-id="<?php echo esc_attr( $item->id ); ?>">
+                <td class="tv-col-sort">
+                    <span class="tv-sort-handle dashicons dashicons-menu" title="Ziehen zum Sortieren"></span>
+                </td>
                 <td>
                     <strong>
                         <a href="<?php echo esc_url( add_query_arg( 'id', $item->id, $base_url ) ); ?>">
@@ -54,6 +62,19 @@
             <?php endforeach; ?>
         </tbody>
     </table>
+
+    <div class="tv-shortcode-box">
+        <h2>Shortcodes</h2>
+        <p>
+            <label>Tabelle aller Sportstätten:
+                <input type="text" class="tv-shortcode-input regular-text" readonly value="[tv_sportstaetten]">
+            </label>
+        </p>
+        <p class="description">
+            Optionen: <code>id="1"</code> (nur eine Sportstätte), <code>spalten="name,adresse,kapazitaet,beschreibung"</code>
+            (Auswahl und Reihenfolge der Spalten).
+        </p>
+    </div>
     <?php else : ?>
         <p>Noch keine Sportstätten vorhanden. <a href="<?php echo esc_url( add_query_arg( 'action', 'neu', $base_url ) ); ?>">Erste Sportstätte anlegen</a></p>
     <?php endif; ?>
@@ -92,6 +113,17 @@
     <h1><?php echo esc_html( $ss->name ); ?></h1>
 
     <div class="tv-detail-layout">
+
+        <div class="tv-shortcode-box">
+            <label>Shortcode (Tabelle dieser Sportstätte):
+                <input type="text" class="tv-shortcode-input regular-text" readonly
+                       value="<?php echo esc_attr( '[tv_sportstaetten id="' . $ss->id . '"]' ); ?>">
+            </label>
+            <label>Belegungsplan:
+                <input type="text" class="tv-shortcode-input regular-text" readonly
+                       value="<?php echo esc_attr( '[tv_belegungsplan sportstaette_id="' . $ss->id . '"]' ); ?>">
+            </label>
+        </div>
 
         <?php /* ── Stammdaten (aufklappbar) ── */ ?>
         <details class="tv-details-box" <?php echo $notice && isset( $_GET['updated'] ) ? 'open' : ''; ?>>

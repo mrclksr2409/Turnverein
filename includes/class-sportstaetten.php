@@ -14,7 +14,7 @@ class Turnverein_Sportstaetten {
 
     public function get_all() {
         global $wpdb;
-        return $wpdb->get_results( "SELECT * FROM {$this->table} ORDER BY name ASC" );
+        return $wpdb->get_results( "SELECT * FROM {$this->table} ORDER BY sortierung ASC, name ASC" );
     }
 
     public function get( $id ) {
@@ -24,8 +24,28 @@ class Turnverein_Sportstaetten {
 
     public function create( $data ) {
         global $wpdb;
-        $wpdb->insert( $this->table, $this->sanitize( $data ) );
+        $row               = $this->sanitize( $data );
+        $row['sortierung'] = (int) $wpdb->get_var( "SELECT COALESCE( MAX( sortierung ), 0 ) + 1 FROM {$this->table}" );
+        $wpdb->insert( $this->table, $row );
         return $wpdb->insert_id;
+    }
+
+    /**
+     * Stores a new order. The array position of each ID becomes its sort value.
+     *
+     * @param int[] $ids Sportstätten IDs in the desired order.
+     */
+    public function save_order( $ids ) {
+        global $wpdb;
+        $position = 1;
+        foreach ( (array) $ids as $id ) {
+            $id = absint( $id );
+            if ( ! $id ) {
+                continue;
+            }
+            $wpdb->update( $this->table, array( 'sortierung' => $position ), array( 'id' => $id ), array( '%d' ), array( '%d' ) );
+            $position++;
+        }
     }
 
     public function update( $id, $data ) {

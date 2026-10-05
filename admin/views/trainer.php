@@ -21,6 +21,7 @@
     <table class="wp-list-table widefat fixed striped">
         <thead>
             <tr>
+                <th class="tv-col-bild"><span class="screen-reader-text">Bild</span></th>
                 <th>Name</th>
                 <th>E-Mail</th>
                 <th>Telefon</th>
@@ -32,6 +33,12 @@
         <tbody>
             <?php foreach ( $items as $item ) : ?>
             <tr>
+                <td class="tv-col-bild">
+                    <?php
+                    $tv_bild = Turnverein_Trainer::get_bild_html( $item, array( 40, 40 ), array( 'class' => 'tv-trainer-thumb' ) );
+                    echo $tv_bild ? $tv_bild : '<span class="tv-trainer-thumb tv-trainer-thumb--empty dashicons dashicons-admin-users"></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core image markup.
+                    ?>
+                </td>
                 <td>
                     <strong>
                         <a href="<?php echo esc_url( add_query_arg( 'id', $item->id, $base_url ) ); ?>">
@@ -89,7 +96,10 @@
 <?php else : ?>
 
     <p class="tv-breadcrumb"><a href="<?php echo esc_url( $base_url ); ?>">← Alle Trainer</a></p>
-    <h1><?php echo esc_html( $trainer->vorname . ' ' . $trainer->nachname ); ?></h1>
+    <h1 class="tv-trainer-heading">
+        <?php echo Turnverein_Trainer::get_bild_html( $trainer, array( 64, 64 ), array( 'class' => 'tv-trainer-thumb' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core image markup. ?>
+        <?php echo esc_html( $trainer->vorname . ' ' . $trainer->nachname ); ?>
+    </h1>
 
     <div class="tv-detail-layout">
 
@@ -199,6 +209,20 @@ function tv_trainer_fields( $item ) {
             <th><label for="tr_lizenz">Lizenz / Qualifikation</label></th>
             <td><input type="text" id="tr_lizenz" name="lizenz" class="regular-text"
                        value="<?php echo esc_attr( $item->lizenz ?? '' ); ?>"></td>
+        </tr>
+        <tr>
+            <th>Bild</th>
+            <td>
+                <?php $bild_id = (int) ( $item->bild_id ?? 0 ); ?>
+                <div class="tv-bild-field">
+                    <input type="hidden" name="bild_id" class="tv-bild-id" value="<?php echo esc_attr( $bild_id ); ?>">
+                    <div class="tv-bild-preview">
+                        <?php echo $bild_id ? wp_get_attachment_image( $bild_id, 'thumbnail' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core image markup. ?>
+                    </div>
+                    <button type="button" class="button tv-bild-select">Bild auswählen</button>
+                    <button type="button" class="button-link tv-bild-remove"<?php echo $bild_id ? '' : ' style="display:none"'; ?>>Bild entfernen</button>
+                </div>
+            </td>
         </tr>
     </table>
     <?php

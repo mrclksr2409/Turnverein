@@ -8,6 +8,7 @@ class Turnverein_Admin {
     public function __construct() {
         add_action( 'admin_menu',            array( $this, 'register_menus' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+        add_action( 'wp_ajax_tv_sportstaetten_sort', array( $this, 'ajax_sportstaetten_sort' ) );
     }
 
     public function register_menus() {
@@ -68,6 +69,52 @@ class Turnverein_Admin {
             array(),
             TURNVEREIN_VERSION
         );
+
+        $deps = array( 'jquery' );
+        if ( false !== strpos( $hook, 'turnverein-trainer' ) ) {
+            wp_enqueue_media();
+        }
+        if ( false !== strpos( $hook, 'turnverein-sportstaetten' ) ) {
+            $deps[] = 'jquery-ui-sortable';
+        }
+
+        wp_enqueue_script(
+            'turnverein-admin',
+            TURNVEREIN_PLUGIN_URL . 'assets/js/admin.js',
+            $deps,
+            TURNVEREIN_VERSION,
+            true
+        );
+        wp_localize_script(
+            'turnverein-admin',
+            'tvAdmin',
+            array(
+                'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+                'sortNonce' => wp_create_nonce( 'tv_sportstaetten_sort' ),
+                'i18n'      => array(
+                    'mediaTitle'  => __( 'Trainerbild auswählen', 'turnverein' ),
+                    'mediaButton' => __( 'Bild verwenden', 'turnverein' ),
+                    'sortSaved'   => __( 'Reihenfolge gespeichert.', 'turnverein' ),
+                    'sortError'   => __( 'Reihenfolge konnte nicht gespeichert werden.', 'turnverein' ),
+                ),
+            )
+        );
+    }
+
+    /**
+     * AJAX: stores the drag & drop order of the Sportstätten.
+     */
+    public function ajax_sportstaetten_sort() {
+        check_ajax_referer( 'tv_sportstaetten_sort', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( null, 403 );
+        }
+
+        $ids = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : array();
+        ( new Turnverein_Sportstaetten() )->save_order( array_filter( $ids ) );
+
+        wp_send_json_success();
     }
 
     // -------------------------------------------------------------------------

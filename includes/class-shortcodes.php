@@ -5,6 +5,12 @@
  * [tv_gruppe_trainer]          – Alle Gruppen mit Trainern und Telefonnummern
  * [tv_gruppe_trainer id="3"]   – Nur eine bestimmte Gruppe (nach ID)
  * [tv_gruppe_trainer gruppe="Fußball"] – Nur eine bestimmte Gruppe (nach Name)
+ *   Optionen: bild="ja|nein" (Standard: ja), email="ja|nein" (Standard: nein),
+ *             titel="ja|nein" (Gruppenüberschrift, Standard: ja)
+ *
+ * [tv_sportstaetten]          – Tabelle aller Sportstätten (in der Admin-Reihenfolge)
+ * [tv_sportstaetten id="1"]   – Nur eine bestimmte Sportstätte
+ *   Optionen: spalten="name,adresse,kapazitaet,beschreibung" (Auswahl/Reihenfolge)
  *
  * [tv_belegungsplan]                    – Alle Sportstätten
  * [tv_belegungsplan sportstaette_id="1"] – Nur eine bestimmte Sportstätte
@@ -20,6 +26,7 @@ class Turnverein_Shortcodes {
     public function __construct() {
         add_shortcode( 'tv_gruppe_trainer',  array( $this, 'shortcode_gruppe_trainer' ) );
         add_shortcode( 'tv_belegungsplan',   array( $this, 'shortcode_belegungsplan' ) );
+        add_shortcode( 'tv_sportstaetten',   array( $this, 'shortcode_sportstaetten' ) );
     }
 
     // -------------------------------------------------------------------------
@@ -32,7 +39,14 @@ class Turnverein_Shortcodes {
         $atts = shortcode_atts( array(
             'id'     => '',
             'gruppe' => '',
+            'bild'   => 'ja',
+            'email'  => 'nein',
+            'titel'  => 'ja',
         ), $atts, 'tv_gruppe_trainer' );
+
+        $show_bild  = $this->is_truthy( $atts['bild'] );
+        $show_email = $this->is_truthy( $atts['email'] );
+        $show_titel = $this->is_truthy( $atts['titel'] );
 
         $gruppen_table = $wpdb->prefix . 'tv_gruppen';
         $pivot_table   = $wpdb->prefix . 'tv_gruppen_trainer';
@@ -49,7 +63,7 @@ class Turnverein_Shortcodes {
 
         $rows = $wpdb->get_results(
             "SELECT g.name AS gruppe_name,
-                    tr.vorname, tr.nachname, tr.telefon, tr.email
+                    tr.vorname, tr.nachname, tr.telefon, tr.email, tr.bild_id
              FROM {$gruppen_table} g
              JOIN {$pivot_table}   gt ON g.id        = gt.gruppe_id
              JOIN {$trainer_table} tr ON gt.trainer_id = tr.id
@@ -73,11 +87,18 @@ class Turnverein_Shortcodes {
         <div class="tv-gruppe-trainer">
         <?php foreach ( $by_gruppe as $gruppenname => $trainer_list ) : ?>
             <div class="tv-gt-gruppe">
+                <?php if ( $show_titel ) : ?>
                 <h3 class="tv-gt-gruppe-name"><?php echo esc_html( $gruppenname ); ?></h3>
+                <?php endif; ?>
                 <table class="tv-gt-table">
                     <tbody>
                     <?php foreach ( $trainer_list as $tr ) : ?>
                     <tr>
+                        <?php if ( $show_bild ) : ?>
+                        <td class="tv-gt-bild">
+                            <?php echo Turnverein_Trainer::get_bild_html( $tr, 'thumbnail', array( 'class' => 'tv-gt-img', 'loading' => 'lazy' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core image markup. ?>
+                        </td>
+                        <?php endif; ?>
                         <td class="tv-gt-name"><?php echo esc_html( $tr->vorname . ' ' . $tr->nachname ); ?></td>
                         <td class="tv-gt-telefon">
                             <?php if ( $tr->telefon ) : ?>
@@ -86,6 +107,13 @@ class Turnverein_Shortcodes {
                                 </a>
                             <?php endif; ?>
                         </td>
+                        <?php if ( $show_email ) : ?>
+                        <td class="tv-gt-email">
+                            <?php if ( $tr->email ) : ?>
+                                <a href="<?php echo esc_url( 'mailto:' . antispambot( $tr->email ) ); ?>"><?php echo esc_html( antispambot( $tr->email ) ); ?></a>
+                            <?php endif; ?>
+                        </td>
+                        <?php endif; ?>
                     </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -187,6 +215,102 @@ class Turnverein_Shortcodes {
     }
 
     // -------------------------------------------------------------------------
+    // [tv_sportstaetten id="…" spalten="…"]
+    // -------------------------------------------------------------------------
+
+    public function shortcode_sportstaetten( $atts ) {
+        $atts = shortcode_atts( array(
+            'id'      => '',
+            'spalten' => 'name,adresse,kapazitaet',
+        ), $atts, 'tv_sportstaetten' );
+
+        $available = array(
+            'name'         => 'Sportstätte',
+            'adresse'      => 'Adresse',
+            'kapazitaet'   => 'Kapazität',
+            'beschreibung' => 'Beschreibung',
+        );
+
+        $spalten = array_values( array_intersect(
+            array_map( 'trim', explode( ',', strtolower( $atts['spalten'] ) ) ),
+            array_keys( $available )
+        ) );
+        if ( empty( $spalten ) ) {
+            $spalten = array( 'name', 'adresse', 'kapazitaet' );
+        }
+
+        $repo = new Turnverein_Sportstaetten();
+        if ( ! empty( $atts['id'] ) ) {
+            $item  = $repo->get( absint( $atts['id'] ) );
+            $items = $item ? array( $item ) : array();
+        } else {
+            $items = $repo->get_all();
+        }
+
+        if ( empty( $items ) ) {
+            return '<p class="tv-no-data">Keine Sportstätten gefunden.</p>';
+        }
+
+        ob_start();
+        $this->enqueue_styles();
+        ?>
+        <div class="tv-sportstaetten-sc">
+            <table class="tv-ss-table">
+                <thead>
+                    <tr>
+                    <?php foreach ( $spalten as $spalte ) : ?>
+                        <th class="tv-ss-<?php echo esc_attr( $spalte ); ?>"><?php echo esc_html( $available[ $spalte ] ); ?></th>
+                    <?php endforeach; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ( $items as $ss ) : ?>
+                    <tr>
+                    <?php foreach ( $spalten as $spalte ) : ?>
+                        <td class="tv-ss-<?php echo esc_attr( $spalte ); ?>" data-label="<?php echo esc_attr( $available[ $spalte ] ); ?>">
+                            <?php
+                            switch ( $spalte ) {
+                                case 'name':
+                                    echo '<strong>' . esc_html( $ss->name ) . '</strong>';
+                                    break;
+                                case 'adresse':
+                                    $ort = trim( $ss->plz . ' ' . $ss->ort );
+                                    echo esc_html( $ss->strasse );
+                                    if ( $ss->strasse && $ort ) {
+                                        echo '<br>';
+                                    }
+                                    echo esc_html( $ort );
+                                    break;
+                                case 'kapazitaet':
+                                    echo $ss->kapazitaet ? esc_html( $ss->kapazitaet . ' Pers.' ) : '';
+                                    break;
+                                case 'beschreibung':
+                                    echo nl2br( esc_html( $ss->beschreibung ) );
+                                    break;
+                            }
+                            ?>
+                        </td>
+                    <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Interprets shortcode yes/no values ("ja", "yes", "1", "true").
+     *
+     * @param string $value Attribute value.
+     * @return bool
+     */
+    private function is_truthy( $value ) {
+        return in_array( strtolower( trim( (string) $value ) ), array( 'ja', 'yes', '1', 'true', 'on' ), true );
+    }
+
+    // -------------------------------------------------------------------------
     // Frontend-CSS (einmalig einbinden)
     // -------------------------------------------------------------------------
 
@@ -197,12 +321,16 @@ class Turnverein_Shortcodes {
             return;
         }
         self::$styles_added = true;
-        add_action( 'wp_head', array( $this, 'print_styles' ), 20 );
+
+        // Shortcodes render after wp_head, so the style is enqueued late and printed in the footer.
+        wp_register_style( 'turnverein-frontend', false, array(), TURNVEREIN_VERSION );
+        wp_add_inline_style( 'turnverein-frontend', $this->get_styles() );
+        wp_enqueue_style( 'turnverein-frontend' );
     }
 
-    public function print_styles() {
+    private function get_styles() {
+        ob_start();
         ?>
-        <style>
         /* --- tv_gruppe_trainer --- */
         .tv-gruppe-trainer { margin: 1.5em 0; }
         .tv-gt-gruppe { margin-bottom: 1.5em; }
@@ -214,6 +342,25 @@ class Turnverein_Shortcodes {
         .tv-gt-telefon { color: #555; }
         .tv-gt-telefon a { color: inherit; text-decoration: none; }
         .tv-gt-telefon a:hover { text-decoration: underline; }
+        .tv-gt-table td { vertical-align: middle; }
+        .tv-gt-bild { width: 64px; }
+        .tv-gt-img { display: block; width: 56px; height: 56px; object-fit: cover; border-radius: 50%; }
+        .tv-gt-email a { color: inherit; }
+
+        /* --- tv_sportstaetten --- */
+        .tv-sportstaetten-sc { margin: 1.5em 0; overflow-x: auto; }
+        .tv-ss-table { border-collapse: collapse; width: 100%; }
+        .tv-ss-table th,
+        .tv-ss-table td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: top; }
+        .tv-ss-table thead th { background: #f3f4f6; border-bottom: 2px solid #d1d5db; }
+        .tv-ss-table tbody tr:last-child td { border-bottom: none; }
+        .tv-ss-kapazitaet { white-space: nowrap; }
+        @media (max-width: 600px) {
+            .tv-ss-table thead { display: none; }
+            .tv-ss-table tr { display: block; border-bottom: 1px solid #e5e7eb; padding: 6px 0; }
+            .tv-ss-table td { display: block; border: none; padding: 4px 0; }
+            .tv-ss-table td:not(.tv-ss-name)::before { content: attr(data-label) ": "; font-weight: 600; }
+        }
 
         /* --- tv_belegungsplan --- */
         .tv-belegungsplan-sc { margin: 1.5em 0; overflow-x: auto; }
@@ -232,7 +379,7 @@ class Turnverein_Shortcodes {
         .tv-bp-trainer { width: 180px; }
         .tv-bp-telefon { width: 140px; }
         .tv-no-data { color: #888; }
-        </style>
         <?php
+        return ob_get_clean();
     }
 }

@@ -38,7 +38,32 @@ class Turnverein_Trainer {
         return $wpdb->delete( $this->table, array( 'id' => (int) $id ) );
     }
 
+    /**
+     * Returns the image HTML of a trainer (empty string if none).
+     *
+     * @param object       $trainer Trainer row.
+     * @param string|array $size    Image size.
+     * @param array        $attr    Additional attributes for the img tag.
+     * @return string
+     */
+    public static function get_bild_html( $trainer, $size = 'thumbnail', $attr = array() ) {
+        $bild_id = isset( $trainer->bild_id ) ? (int) $trainer->bild_id : 0;
+        if ( ! $bild_id ) {
+            return '';
+        }
+        $attr = wp_parse_args(
+            $attr,
+            array( 'alt' => trim( ( $trainer->vorname ?? '' ) . ' ' . ( $trainer->nachname ?? '' ) ) )
+        );
+        return wp_get_attachment_image( $bild_id, $size, false, $attr );
+    }
+
     private function sanitize( $data ) {
+        $bild_id = absint( $data['bild_id'] ?? 0 );
+        if ( $bild_id && ! wp_attachment_is_image( $bild_id ) ) {
+            $bild_id = 0;
+        }
+
         return array(
             'vorname'  => sanitize_text_field( $data['vorname'] ?? '' ),
             'nachname' => sanitize_text_field( $data['nachname'] ?? '' ),
@@ -46,6 +71,7 @@ class Turnverein_Trainer {
             'telefon'  => sanitize_text_field( $data['telefon'] ?? '' ),
             'sportart' => sanitize_text_field( $data['sportart'] ?? '' ),
             'lizenz'   => sanitize_text_field( $data['lizenz'] ?? '' ),
+            'bild_id'  => $bild_id,
         );
     }
 }
