@@ -8,7 +8,8 @@
         </label>
         <p class="description">
             Optionen: <code>sportstaette_id="1"</code> (eine Sportstätte), <code>gruppe_id="3"</code> oder <code>gruppe="Name"</code>
-            (eine Gruppe), <code>tag="Montag"</code>, <code>titel="nein"</code>, <code>telefon="nein"</code>.
+            (eine Gruppe), <code>tag="Montag"</code>, <code>telefon="nein"</code>,
+            <code>titel="Eigene Überschrift"</code> oder <code>titel="nein"</code>, <code>ebene="h2"</code> (Ebene der eigenen Überschrift).
         </p>
     </div>
 

@@ -72,7 +72,7 @@
         </p>
         <p class="description">
             Optionen: <code>id="1"</code> (nur eine Sportstätte), <code>spalten="name,adresse,kapazitaet,beschreibung"</code>
-            (Auswahl und Reihenfolge der Spalten).
+            (Auswahl und Reihenfolge der Spalten), <code>titel="Eigene Überschrift"</code>, <code>ebene="h2"</code>.
         </p>
     </div>
     <?php else : ?>

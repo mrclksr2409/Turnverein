@@ -6,16 +6,21 @@
  * [tv_gruppe_trainer id="3"]   – Nur eine bestimmte Gruppe (nach ID)
  * [tv_gruppe_trainer gruppe="Fußball"] – Nur eine bestimmte Gruppe (nach Name)
  *   Optionen: bild="ja|nein" (Standard: ja), email="ja|nein" (Standard: nein),
- *             titel="ja|nein" (Gruppenüberschrift, Standard: ja)
+ *             titel="ja|nein|Eigener Text" (Gruppenüberschrift, Standard: ja)
  *
  * [tv_sportstaetten]          – Tabelle aller Sportstätten (in der Admin-Reihenfolge)
  * [tv_sportstaetten id="1"]   – Nur eine bestimmte Sportstätte
- *   Optionen: spalten="name,adresse,kapazitaet,beschreibung" (Auswahl/Reihenfolge)
+ *   Optionen: spalten="name,adresse,kapazitaet,beschreibung" (Auswahl/Reihenfolge),
+ *             titel="Eigener Text" (Überschrift über der Tabelle)
  *
  * [tv_belegungsplan]                    – Vollständiger Plan, je Sportstätte ein Abschnitt
  * [tv_belegungsplan sportstaette_id="1"] – Plan einer Sportstätte
  * [tv_belegungsplan gruppe_id="3"]       – Trainingszeiten einer Gruppe (alternativ gruppe="Name")
- *   Optionen: tag="Montag", titel="ja|nein", telefon="ja|nein"
+ *   Optionen: tag="Montag", titel="ja|nein|Eigener Text", telefon="ja|nein"
+ *
+ * Eigener Titel: ersetzt bei einer einzelnen Gruppe/Sportstätte deren Namen,
+ * sonst erscheint er als Überschrift über der gesamten Ausgabe.
+ * ebene="h2" … "h6" legt die Überschriften-Ebene des eigenen Titels fest (Standard: h3).
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -43,11 +48,13 @@ class Turnverein_Shortcodes {
             'bild'   => 'ja',
             'email'  => 'nein',
             'titel'  => 'ja',
+            'ebene'  => 'h3',
         ), $atts, 'tv_gruppe_trainer' );
 
         $show_bild  = $this->is_truthy( $atts['bild'] );
         $show_email = $this->is_truthy( $atts['email'] );
-        $show_titel = $this->is_truthy( $atts['titel'] );
+        $titel      = $this->parse_titel( $atts['titel'] );
+        $tag        = $this->heading_tag( $atts['ebene'] );
 
         $gruppen_table = $wpdb->prefix . 'tv_gruppen';
         $pivot_table   = $wpdb->prefix . 'tv_gruppen_trainer';
@@ -86,11 +93,22 @@ class Turnverein_Shortcodes {
         $this->enqueue_styles();
         ?>
         <div class="tv-gruppe-trainer">
+        <?php
+        // A custom title replaces the group name for a single group, otherwise it is shown above all groups.
+        $single = 1 === count( $by_gruppe );
+        if ( '' !== $titel['text'] && ! $single ) {
+            $this->render_heading( $titel['text'], $tag, 'tv-sc-titel' );
+        }
+        ?>
         <?php foreach ( $by_gruppe as $gruppenname => $trainer_list ) : ?>
             <div class="tv-gt-gruppe">
-                <?php if ( $show_titel ) : ?>
-                <h3 class="tv-gt-gruppe-name"><?php echo esc_html( $gruppenname ); ?></h3>
-                <?php endif; ?>
+                <?php
+                if ( '' !== $titel['text'] && $single ) {
+                    $this->render_heading( $titel['text'], $tag, 'tv-gt-gruppe-name' );
+                } elseif ( $titel['show'] ) {
+                    $this->render_heading( $gruppenname, 'h3', 'tv-gt-gruppe-name' );
+                }
+                ?>
                 <table class="tv-gt-table">
                     <tbody>
                     <?php foreach ( $trainer_list as $tr ) : ?>
@@ -136,11 +154,13 @@ class Turnverein_Shortcodes {
             'gruppe_id'       => '',
             'gruppe'          => '',    // group name, alternative to gruppe_id
             'tag'             => '',    // e.g. "Montag"
-            'titel'           => 'ja',  // headings (facility / group name)
+            'titel'           => 'ja',  // "ja", "nein" or a custom heading text
+            'ebene'           => 'h3',  // heading level of a custom title
             'telefon'         => 'ja',  // trainer phone column
         ), $atts, 'tv_belegungsplan' );
 
-        $show_titel   = $this->is_truthy( $atts['titel'] );
+        $titel        = $this->parse_titel( $atts['titel'] );
+        $tag          = $this->heading_tag( $atts['ebene'] );
         $show_telefon = $this->is_truthy( $atts['telefon'] );
 
         $tz    = new Turnverein_Trainingszeiten();
@@ -167,9 +187,13 @@ class Turnverein_Shortcodes {
             $this->enqueue_styles();
             ?>
             <div class="tv-belegungsplan-sc tv-bp-mode-gruppe">
-                <?php if ( $show_titel ) : ?>
-                    <h3 class="tv-bp-title"><?php echo esc_html( $gruppe->name ); ?></h3>
-                <?php endif; ?>
+                <?php
+                if ( '' !== $titel['text'] ) {
+                    $this->render_heading( $titel['text'], $tag, 'tv-bp-title' );
+                } elseif ( $titel['show'] ) {
+                    $this->render_heading( $gruppe->name, 'h3', 'tv-bp-title' );
+                }
+                ?>
                 <?php $this->render_plan_table( $slots, 'gruppe', $show_telefon ); ?>
             </div>
             <?php
@@ -198,6 +222,12 @@ class Turnverein_Shortcodes {
         $this->enqueue_styles();
         ?>
         <div class="tv-belegungsplan-sc">
+        <?php
+        // A custom title replaces the facility name for a single facility, otherwise it is shown above the plan.
+        if ( '' !== $titel['text'] && ! $single ) {
+            $this->render_heading( $titel['text'], $tag, 'tv-sc-titel' );
+        }
+        ?>
         <?php foreach ( $sportstaetten as $ss ) :
             $ss_slots = $by_ss[ (int) $ss->id ] ?? array();
             // In the full plan, facilities without training times are skipped.
@@ -207,8 +237,14 @@ class Turnverein_Shortcodes {
             $adresse = trim( $ss->strasse . ', ' . trim( $ss->plz . ' ' . $ss->ort ), ', ' );
         ?>
             <div class="tv-bp-section">
-                <?php if ( $show_titel ) : ?>
-                    <h3 class="tv-bp-title"><?php echo esc_html( $ss->name ); ?></h3>
+                <?php if ( $titel['show'] ) : ?>
+                    <?php
+                    if ( '' !== $titel['text'] && $single ) {
+                        $this->render_heading( $titel['text'], $tag, 'tv-bp-title' );
+                    } else {
+                        $this->render_heading( $ss->name, 'h3', 'tv-bp-title' );
+                    }
+                    ?>
                     <?php if ( $adresse ) : ?>
                         <p class="tv-bp-adresse"><?php echo esc_html( $adresse ); ?></p>
                     <?php endif; ?>
@@ -315,7 +351,11 @@ class Turnverein_Shortcodes {
         $atts = shortcode_atts( array(
             'id'      => '',
             'spalten' => 'name,adresse,kapazitaet',
+            'titel'   => '',
+            'ebene'   => 'h3',
         ), $atts, 'tv_sportstaetten' );
+
+        $titel = $this->parse_titel( $atts['titel'] );
 
         $available = array(
             'name'         => 'Sportstätte',
@@ -348,6 +388,11 @@ class Turnverein_Shortcodes {
         $this->enqueue_styles();
         ?>
         <div class="tv-sportstaetten-sc">
+            <?php
+            if ( '' !== $titel['text'] ) {
+                $this->render_heading( $titel['text'], $this->heading_tag( $atts['ebene'] ), 'tv-sc-titel' );
+            }
+            ?>
             <table class="tv-ss-table">
                 <thead>
                     <tr>
@@ -391,6 +436,55 @@ class Turnverein_Shortcodes {
         </div>
         <?php
         return ob_get_clean();
+    }
+
+    /**
+     * Interprets the "titel" attribute.
+     *
+     * "ja"/empty shows the automatic headings, "nein" hides them,
+     * any other value is used as a custom heading text.
+     *
+     * @param string $value Attribute value.
+     * @return array{show: bool, text: string}
+     */
+    private function parse_titel( $value ) {
+        $value = trim( (string) $value );
+        $lower = strtolower( $value );
+
+        if ( '' === $value || in_array( $lower, array( 'ja', 'yes', '1', 'true', 'on' ), true ) ) {
+            return array( 'show' => true, 'text' => '' );
+        }
+        if ( in_array( $lower, array( 'nein', 'no', '0', 'false', 'off' ), true ) ) {
+            return array( 'show' => false, 'text' => '' );
+        }
+        return array( 'show' => true, 'text' => sanitize_text_field( $value ) );
+    }
+
+    /**
+     * Returns a safe heading tag (h2–h6), falling back to h3.
+     *
+     * @param string $value Attribute value.
+     * @return string
+     */
+    private function heading_tag( $value ) {
+        $value = strtolower( trim( (string) $value ) );
+        return in_array( $value, array( 'h2', 'h3', 'h4', 'h5', 'h6' ), true ) ? $value : 'h3';
+    }
+
+    /**
+     * Outputs a heading.
+     *
+     * @param string $text  Heading text.
+     * @param string $tag   Heading tag (validated via heading_tag()).
+     * @param string $class CSS class.
+     */
+    private function render_heading( $text, $tag, $class ) {
+        printf(
+            '<%1$s class="%2$s">%3$s</%1$s>',
+            tag_escape( $tag ),
+            esc_attr( $class ),
+            esc_html( $text )
+        );
     }
 
     /**
@@ -475,6 +569,7 @@ class Turnverein_Shortcodes {
         .tv-bp-gruppe  { min-width: 180px; }
         .tv-bp-trainer { width: 180px; }
         .tv-bp-telefon { width: 140px; }
+        .tv-sc-titel { margin: 0 0 .75em; }
         .tv-no-data { color: #888; }
         <?php
         return ob_get_clean();

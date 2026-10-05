@@ -14,9 +14,11 @@ WordPress plugin for managing sports facilities, trainers, groups and training t
 
 | Shortcode | Description | Attributes |
 |---|---|---|
-| `[tv_sportstaetten]` | Table of all facilities in the admin order | `id="1"` – single facility; `spalten="name,adresse,kapazitaet,beschreibung"` – columns and their order (default: `name,adresse,kapazitaet`) |
-| `[tv_gruppe_trainer]` | Trainers per group with image and phone number | `id="3"` or `gruppe="Name"` – single group; `bild="nein"` – hide images; `email="ja"` – show e-mail; `titel="nein"` – hide group heading |
-| `[tv_belegungsplan]` | Full training schedule, one section per facility (admin order), grouped by weekday | `sportstaette_id="1"` – single facility; `gruppe_id="3"` or `gruppe="Name"` – training times of one group; `tag="Montag"`; `titel="nein"` – hide headings; `telefon="nein"` – hide phone column |
+| `[tv_sportstaetten]` | Table of all facilities in the admin order | `id="1"` – single facility; `spalten="name,adresse,kapazitaet,beschreibung"` – columns and their order (default: `name,adresse,kapazitaet`); `titel="Text"` – heading above the table; `ebene="h2"` |
+| `[tv_gruppe_trainer]` | Trainers per group with image and phone number | `id="3"` or `gruppe="Name"` – single group; `bild="nein"` – hide images; `email="ja"` – show e-mail; `titel="nein"` – hide group heading, `titel="Text"` – custom heading; `ebene="h2"` |
+| `[tv_belegungsplan]` | Full training schedule, one section per facility (admin order), grouped by weekday | `sportstaette_id="1"` – single facility; `gruppe_id="3"` or `gruppe="Name"` – training times of one group; `tag="Montag"`; `titel="nein"` – hide headings, `titel="Text"` – custom heading; `ebene="h2"`; `telefon="nein"` – hide phone column |
+
+**Custom title:** `titel="Any text"` replaces the automatic heading when a single group or facility is shown; otherwise it appears as an additional heading above the whole output. `ebene` sets its heading level (`h2`–`h6`, default `h3`).
 
 The matching shortcode for a single facility or group is shown on its detail page in the admin.
 
@@ -41,6 +43,9 @@ This plugin uses the [Plugin Update Checker](https://github.com/YahnisElsts/plug
 WordPress checks for updates automatically (every 12 hours by default). You can trigger a manual check under **Plugins → Check for updates**.
 
 ## Changelog
+
+### 1.5.2 — 2026-10-05
+- Added: custom headings for all shortcodes via `titel="Text"`, heading level via `ebene="h2"`…`h6`.
 
 ### 1.5.1 — 2026-10-05
 - Changed: `[tv_belegungsplan]` without attributes now renders the full schedule with one section (name and address) per facility.
