@@ -388,13 +388,6 @@
     vertical-align: middle;
 }
 
-.tv-trainer-thumb--empty {
-    font-size: 28px;
-    line-height: 40px;
-    text-align: center;
-    color: #c3c4c7;
-}
-
 .tv-trainer-heading {
     display: flex;
     align-items: center;

@@ -48,6 +48,9 @@ WordPress checks for updates automatically (every 12 hours by default). You can 
 
 ## Changelog
 
+### 1.6.1 — 2026-10-07
+- Added: default trainer image (`assets/images/trainer-default.svg`), shown in the admin and in `[tv_gruppe_trainer]` when a trainer has no image or the attachment was deleted. Can be replaced via the filter `turnverein_trainer_default_bild_url`.
+
 ### 1.6.0 — 2026-10-05
 - Changed: the plugin no longer outputs any frontend CSS. All CSS classes stay in place so the shortcodes can be styled in the theme; the former default styles are available as a template in the wiki (*Design anpassen*).
 

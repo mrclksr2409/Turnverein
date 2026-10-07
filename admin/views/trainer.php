@@ -34,10 +34,7 @@
             <?php foreach ( $items as $item ) : ?>
             <tr>
                 <td class="tv-col-bild">
-                    <?php
-                    $tv_bild = Turnverein_Trainer::get_bild_html( $item, array( 40, 40 ), array( 'class' => 'tv-trainer-thumb' ) );
-                    echo $tv_bild ? $tv_bild : '<span class="tv-trainer-thumb tv-trainer-thumb--empty dashicons dashicons-admin-users"></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core image markup.
-                    ?>
+                    <?php echo Turnverein_Trainer::get_bild_html( $item, array( 40, 40 ), array( 'class' => 'tv-trainer-thumb' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped image markup. ?>
                 </td>
                 <td>
                     <strong>
