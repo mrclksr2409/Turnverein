@@ -16,9 +16,9 @@ WordPress plugin for managing sports facilities, trainers, groups and training t
 |---|---|---|
 | `[tv_sportstaetten]` | Table of all facilities in the admin order | `id="1"` – single facility; `spalten="name,adresse,kapazitaet,beschreibung"` – columns and their order (default: `name,adresse,kapazitaet`); `titel="Text"` – heading above the table; `ebene="h2"` |
 | `[tv_gruppe_trainer]` | Trainers per group with image and phone number | `id="3"` or `gruppe="Name"` – single group; `bild="nein"` – hide images; `email="ja"` – show e-mail; `titel="nein"` – hide group heading, `titel="Text"` – custom heading; `ebene="h2"` |
-| `[tv_belegungsplan]` | Full training schedule, one section per facility (admin order), grouped by weekday | `sportstaette_id="1"` – single facility; `gruppe_id="3"` or `gruppe="Name"` – training times of one group; `tag="Montag"`; `titel="nein"` – hide headings, `titel="Text"` – custom heading; `ebene="h2"`; `telefon="nein"` – hide phone column |
+| `[tv_belegungsplan]` | Full training schedule, one section per facility (admin order), grouped by weekday | `sportstaette_id="1"` – single facility; `gruppe_id="3"` or `gruppe="Name"` – training times of one group; `tag="Montag"`; `titel="nein"` – hide headings, `titel="Text"` – custom heading; `ebene="h2"`; `trainer="nein"` – hide trainer column; `telefon="nein"` – hide phone column |
 
-**Custom title:** `titel="Any text"` replaces the automatic heading when a single group or facility is shown; otherwise it appears as an additional heading above the whole output. `ebene` sets its heading level (`h2`–`h6`, default `h3`).
+**Custom title:** `titel="Any text"` replaces the automatic heading when a single group or facility is shown; otherwise it appears as an additional heading above the whole output. `ebene` sets the level of the top-most heading (`h2`–`h6`, default `h3`) – also for the automatic group/facility headings; below a custom title they are one level lower. Typographic quotes (`„…“`, `“…”`) are accepted as well.
 
 The matching shortcode for a single facility or group is shown on its detail page in the admin.
 
@@ -48,8 +48,19 @@ WordPress checks for updates automatically (every 12 hours by default). You can 
 
 ## Changelog
 
-### 1.5.3 — 2026-10-07
+### 1.6.1 — 2026-10-07
 - Added: default trainer image (`assets/images/trainer-default.svg`), shown in the admin and in `[tv_gruppe_trainer]` when a trainer has no image or the attachment was deleted. Can be replaced via the filter `turnverein_trainer_default_bild_url`.
+
+### 1.6.0 — 2026-10-05
+- Changed: the plugin no longer outputs any frontend CSS. All CSS classes stay in place so the shortcodes can be styled in the theme; the former default styles are available as a template in the wiki (*Design anpassen*).
+
+### 1.5.4 — 2026-10-05
+- Added: `trainer="nein"` option for `[tv_belegungsplan]` to hide the trainer column.
+
+### 1.5.3 — 2026-10-05
+- Fixed: `titel` and `ebene` were ignored or cut off when the editor turned the quotes into typographic quotes (`„…“`, `“…”`).
+- Fixed: `ebene` now also applies to the automatic group/facility headings; below a custom title they are one level lower.
+- Fixed: custom titles are no longer forced to a fixed font size, so the chosen level is visible.
 
 ### 1.5.2 — 2026-10-05
 - Added: custom headings for all shortcodes via `titel="Text"`, heading level via `ebene="h2"`…`h6`.

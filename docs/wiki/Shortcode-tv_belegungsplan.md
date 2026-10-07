@@ -53,7 +53,8 @@ Ist am Slot ein bestimmter Trainer gewählt, erscheint nur dieser – sonst alle
 | `gruppe` | Text | – | Gruppe über den Namen (Alternative zu `gruppe_id`) |
 | `tag` | `Montag` … `Sonntag` | – | Nur dieser Wochentag (Groß-/Kleinschreibung beachten; ein unbekannter Wert wird ignoriert) |
 | `titel` | `ja` / `nein` / Text | `ja` | Überschriften, siehe [[Shortcodes]] |
-| `ebene` | `h2` … `h6` | `h3` | Ebene der eigenen Überschrift |
+| `ebene` | `h2` … `h6` | `h3` | Ebene der obersten Überschrift, siehe [[Shortcodes]] |
+| `trainer` | `ja` / `nein` | `ja` | Trainerspalte anzeigen |
 | `telefon` | `ja` / `nein` | `ja` | Telefonspalte anzeigen |
 
 Werden `gruppe_id`/`gruppe` **und** `sportstaette_id` angegeben, hat die Gruppe Vorrang.
@@ -65,6 +66,7 @@ Werden `gruppe_id`/`gruppe` **und** `sportstaette_id` angegeben, hat die Gruppe 
 | `[tv_belegungsplan titel="Unsere Trainingszeiten" ebene="h2"]` | Vollständiger Plan mit Hauptüberschrift, darunter die Sportstätten |
 | `[tv_belegungsplan sportstaette_id="1" titel="Große Turnhalle"]` | Eine Sportstätte, Name durch eigenen Titel ersetzt |
 | `[tv_belegungsplan gruppe_id="3" telefon="nein"]` | Trainingszeiten einer Gruppe ohne Telefonnummern |
+| `[tv_belegungsplan trainer="nein" telefon="nein"]` | Nur Zeiten und Gruppen, ohne Trainer und Telefonnummern |
 | `[tv_belegungsplan tag="Samstag" titel="nein"]` | Nur Samstag, ohne Überschriften |
 
 ## Meldungen

@@ -77,7 +77,7 @@
         <p class="description">
             Optionen: <code>id="3"</code> oder <code>gruppe="Name"</code> (nur eine Gruppe), <code>bild="nein"</code> (ohne Bilder),
             <code>email="ja"</code> (E-Mail-Adresse anzeigen), <code>titel="Eigene Überschrift"</code> oder <code>titel="nein"</code>,
-            <code>ebene="h2"</code> (Ebene der eigenen Überschrift).
+            <code>ebene="h2"</code> (Ebene der obersten Überschrift).
         </p>
     </div>
     <?php else : ?>
