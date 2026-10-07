@@ -17,6 +17,7 @@ turnverein/
 │   └── views/                     Admin-Templates
 ├── assets/
 │   ├── css/admin.css
+│   ├── images/trainer-default.svg Standardbild für Trainer ohne Bild
 │   └── js/admin.js                Mediathek, Drag & Drop, Shortcode-Felder
 ├── lib/plugin-update-checker/     Bibliothek für Updates aus GitHub
 └── docs/wiki/                     Quelle dieses Wikis
@@ -105,6 +106,16 @@ add_filter( 'shortcode_atts_tv_gruppe_trainer', function ( $out, $pairs, $atts )
 ```
 
 Verfügbar: `shortcode_atts_tv_belegungsplan`, `shortcode_atts_tv_gruppe_trainer`, `shortcode_atts_tv_sportstaetten`.
+
+### Standardbild für Trainer
+
+Trainer ohne Bild zeigen `assets/images/trainer-default.svg`. Eigenes Standardbild (z. B. Vereinslogo) per Filter; ein leerer String blendet das Standardbild aus:
+
+```php
+add_filter( 'turnverein_trainer_default_bild_url', function () {
+    return get_stylesheet_directory_uri() . '/images/trainer-platzhalter.png';
+} );
+```
 
 ## AJAX
 

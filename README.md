@@ -48,6 +48,9 @@ WordPress checks for updates automatically (every 12 hours by default). You can 
 
 ## Changelog
 
+### 1.5.3 — 2026-10-07
+- Added: default trainer image (`assets/images/trainer-default.svg`), shown in the admin and in `[tv_gruppe_trainer]` when a trainer has no image or the attachment was deleted. Can be replaced via the filter `turnverein_trainer_default_bild_url`.
+
 ### 1.5.2 — 2026-10-05
 - Added: custom headings for all shortcodes via `titel="Text"`, heading level via `ebene="h2"`…`h6`.
 - Added: detailed wiki in `docs/wiki/`, synced to the GitHub wiki on every push to `main`.

@@ -39,7 +39,8 @@ class Turnverein_Trainer {
     }
 
     /**
-     * Returns the image HTML of a trainer (empty string if none).
+     * Returns the image HTML of a trainer. Falls back to the default image
+     * if no image is set or the attachment no longer exists.
      *
      * @param object       $trainer Trainer row.
      * @param string|array $size    Image size.
@@ -47,15 +48,72 @@ class Turnverein_Trainer {
      * @return string
      */
     public static function get_bild_html( $trainer, $size = 'thumbnail', $attr = array() ) {
-        $bild_id = isset( $trainer->bild_id ) ? (int) $trainer->bild_id : 0;
-        if ( ! $bild_id ) {
-            return '';
-        }
         $attr = wp_parse_args(
             $attr,
             array( 'alt' => trim( ( $trainer->vorname ?? '' ) . ' ' . ( $trainer->nachname ?? '' ) ) )
         );
-        return wp_get_attachment_image( $bild_id, $size, false, $attr );
+
+        $bild_id = isset( $trainer->bild_id ) ? (int) $trainer->bild_id : 0;
+        if ( $bild_id ) {
+            $html = wp_get_attachment_image( $bild_id, $size, false, $attr );
+            if ( $html ) {
+                return $html;
+            }
+        }
+
+        return self::get_default_bild_html( $size, $attr );
+    }
+
+    /**
+     * Returns the URL of the default trainer image.
+     *
+     * Filter: turnverein_trainer_default_bild_url
+     *
+     * @return string
+     */
+    public static function get_default_bild_url() {
+        return (string) apply_filters(
+            'turnverein_trainer_default_bild_url',
+            TURNVEREIN_PLUGIN_URL . 'assets/images/trainer-default.svg'
+        );
+    }
+
+    /**
+     * Returns the img tag for the default trainer image.
+     *
+     * @param string|array $size Image size.
+     * @param array        $attr Attributes for the img tag.
+     * @return string
+     */
+    private static function get_default_bild_html( $size, $attr ) {
+        $url = self::get_default_bild_url();
+        if ( '' === $url ) {
+            return '';
+        }
+
+        if ( is_array( $size ) ) {
+            $width  = (int) ( $size[0] ?? 0 );
+            $height = (int) ( $size[1] ?? $width );
+        } else {
+            $width  = (int) get_option( $size . '_size_w', 150 );
+            $height = (int) get_option( $size . '_size_h', 150 );
+        }
+
+        $attr['class'] = trim( ( $attr['class'] ?? '' ) . ' tv-trainer-bild--default' );
+        $attr          = array_merge(
+            array(
+                'src'    => $url,
+                'width'  => $width ? $width : 150,
+                'height' => $height ? $height : 150,
+            ),
+            $attr
+        );
+
+        $html = '<img';
+        foreach ( $attr as $name => $value ) {
+            $html .= ' ' . esc_attr( $name ) . '="' . ( 'src' === $name ? esc_url( $value ) : esc_attr( $value ) ) . '"';
+        }
+        return $html . '>';
     }
 
     private function sanitize( $data ) {

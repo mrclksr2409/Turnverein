@@ -25,7 +25,7 @@ Gruppen werden alphabetisch ausgegeben, Trainer nach Nachname. Gruppen **ohne** 
 
 ## Hinweise
 
-- **Bilder** werden rund (56 × 56 px) dargestellt. Trainer ohne Bild erhalten eine leere Bildspalte, damit die Namen bündig bleiben. Bilder werden „lazy“ geladen.
+- **Bilder** werden rund (56 × 56 px) dargestellt. Trainer ohne Bild (oder deren Bild aus der Mediathek gelöscht wurde) erhalten ein neutrales Standardbild (CSS-Klasse `tv-trainer-bild--default`). Bilder werden „lazy“ geladen.
 - **E-Mail-Adressen** werden im HTML verschleiert (WordPress-Funktion `antispambot`), um das Auslesen durch Spam-Bots zu erschweren.
 - **Telefonnummern** werden als `tel:`-Link ausgegeben – auf dem Smartphone startet ein Tippen den Anruf.
 
