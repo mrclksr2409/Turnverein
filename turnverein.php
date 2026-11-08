@@ -3,7 +3,7 @@
  * Plugin Name: Turnverein Manager
  * Plugin URI:  https://github.com/mrclksr2409/Turnverein
  * Description: Verwaltung von Sportstätten, Trainern und Gruppen für Turnvereine.
- * Version:     1.6.1
+ * Version:     1.6.2
  * Author:      Turnverein
  * License:     GPL-2.0+
  * Text Domain: turnverein
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TURNVEREIN_VERSION', '1.6.1' );
+define( 'TURNVEREIN_VERSION', '1.6.2' );
 define( 'TURNVEREIN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TURNVEREIN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -32,8 +32,8 @@ $turnverein_puc_loader = TURNVEREIN_PLUGIN_DIR . 'lib/plugin-update-checker/plug
 if ( file_exists( $turnverein_puc_loader ) ) {
     require_once $turnverein_puc_loader;
 
-    if ( class_exists( '\\YahnisElsts\\PluginUpdateChecker\\v5\\PucFactory' ) ) {
-        $turnverein_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+    if ( class_exists( '\\YahnisElsts\\PluginUpdateChecker\\v6\\PucFactory' ) ) {
+        $turnverein_update_checker = \YahnisElsts\PluginUpdateChecker\v6\PucFactory::buildUpdateChecker(
             'https://github.com/mrclksr2409/Turnverein/',
             __FILE__,
             'turnverein'

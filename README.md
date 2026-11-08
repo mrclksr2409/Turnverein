@@ -48,6 +48,9 @@ WordPress checks for updates automatically (every 12 hours by default). You can 
 
 ## Changelog
 
+### 1.6.2 — 2026-11-08
+- Geändert: Plugin Update Checker auf v6.0 aktualisiert.
+
 ### 1.6.1 — 2026-10-07
 - Added: default trainer image (`assets/images/trainer-default.svg`), shown in the admin and in `[tv_gruppe_trainer]` when a trainer has no image or the attachment was deleted. Can be replaced via the filter `turnverein_trainer_default_bild_url`.
 
